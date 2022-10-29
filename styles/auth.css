@@ -1,0 +1,81 @@
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color:rgb(63, 78, 79); 
+    background-image: url(../assets/marble1.jpg);
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Aboreto', cursive;
+    background-image: url(../assets/redwood.jpg);
+    height: 70px;
+    color: darkgoldenrod;
+    border: 2px solid darkgoldenrod;
+    box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+-webkit-box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+-moz-box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+
+    
+    
+}
+
+.form-container {
+    margin: 50px;
+    background-image: url(../assets/redwood.jpg); 
+    width: 600px;
+    height: 500px;
+    font-family: 'Aboreto', cursive;
+    font-weight: bold;
+    border-radius: 6px;
+    text-align: center;
+    color: darkgoldenrod;
+    padding: 30px;
+    border: 2px solid darkgoldenrod;
+    box-shadow: 10px 12px 10px 11px rgba(0,0,0,0.75);
+-webkit-box-shadow: 10px 12px 10px 11px rgba(0,0,0,0.75);
+-moz-box-shadow: 10px 12px 10px 11px rgba(0,0,0,0.75);
+}
+
+.form-container input {
+    margin: 20px;
+    width: 400px;
+    height: 40px;
+}
+
+
+
+button {
+    margin: 15px;
+    padding: 12px;
+    font-size: 18px;
+    width: 200px;
+    align-self: center;
+    background-image: url(../assets/white-square.jpg);
+    border: 2px solid black;
+    cursor: pointer;
+    font-family: 'Aboreto', cursive;
+    font-weight: bold;
+
+
+}
+
+button:hover {
+    transition: all .2s ease-in-out;
+    transform: scale(1.05);
+}
+
+#signup-form #change-button {
+    justify-self: center;
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
