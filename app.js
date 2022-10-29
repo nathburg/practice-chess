@@ -20,7 +20,6 @@ let check = false;
 let game = true;
 let checkDefense = [];
 let currentPlayer = 'white';
-let enPassant = [];
 
 
 
@@ -430,7 +429,6 @@ function pawn(position) {
         && prevMoveDistance === 2
         && Math.abs(prevMoveX - x) === 1
         ) {
-          console.log('register en passant');
           const passantMoveTo = coordsToString([prevMoveX, pawnSpecs[currentPlayer].moveDirection(prevMoveY)]);
           moves.push({
             space: passantMoveTo,
