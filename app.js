@@ -132,7 +132,6 @@ function moveButton(currentPosition, targetPosition) {
     board[currentPosition] = false;
     board[targetPosition] = saveCurrentPiece;
     if (isKingSafe()) {
-      console.log(targetPosition, threatsToSpace(targetPosition));
       targetPositionEl.textContent = 'o';
       targetPositionEl.addEventListener('click', () => {
         saveGameBtn.classList.remove('game-saved');
@@ -146,7 +145,7 @@ function moveButton(currentPosition, targetPosition) {
         checkDefense = [];
         check = false;
         checkDisplay.textContent = '';
-        fullCheck();
+        checkChecker();
         pastMoves.push([currentPosition, targetPosition]);
       })
     board[currentPosition] = saveCurrentPiece;
@@ -183,7 +182,7 @@ function attackButton(currentPosition, targetPosition) {
         displayBoard();
         checkDefense = [];
         check = false;
-        fullCheck();
+        checkChecker();
       })
     board[currentPosition] = saveCurrentPiece;
     board[targetPosition] = saveTargetPiece;  
@@ -207,7 +206,7 @@ function enPassantButton(currentPosition, targetPosition) {
   board[currentPosition] = false;
   board[targetPosition] = saveCurrentPiece;
   board[enemyPosition] = false;
-  if (isKingSafe) {
+  if (isKingSafe()) {
     targetPositionEl.textContent = 'x';
     targetPositionEl.addEventListener('click', () => {
       takePieceSound();
@@ -500,15 +499,10 @@ function isKingSafe() {
 
 function findKing(color) {
     for (let position in board) {
-
-
         if (stringToFunction[board[position].piece] === king
-
             && board[position].color === color) {
-            
             return position;
         }
-
     }
 }
 
@@ -531,7 +525,10 @@ function threatsToSpace(space) {
 
                         if (board[position].piece === 'pawn' || board[position].piece === 'knight') {
                             threatMoves.push({space: position, condition: 'enemy'});
-                        } else if (board[position].piece === 'king') {
+                        // the following is give this function generality outside of just check
+                        // I'd like to use it for castling to see if the spaces between king and
+                        // rook are threatened by anything, including a king
+                          } else if (board[position].piece === 'king') {
                             threatMoves.push({space: position, condition: 'king'});
                         } else {
                             const threatX = stringToCoords(position)[0];
@@ -556,53 +553,45 @@ function threatsToSpace(space) {
 
 
 
-function isSpaceThreatened(position) {
+function isSpaceSafe(position) {
     return threatsToSpace(position).length === 0;
 }
 
 
-function fullCheck() {
-    let kingPosition = findKing(currentPlayer);
-    let defenseMoves = [];
-    let kingEvasionMoves = [];
-    const threatMoves = threatsToSpace(kingPosition);
-    if (threatMoves.length > 0) {
-        check = true;
-        
-        checkDisplay.textContent = "You're in check";
-        for (let position in board) {
-
-
-            if (position === kingPosition) {
-                const kingMoves = king(position);
-                for (let move of kingMoves) {
-                    if (isSpaceThreatened(move.space)) {
-                        kingEvasionMoves.push(move);
-                    }
-                }
-            } else if (board[position].color === currentPlayer) {
-                const newDefenseMoves = stringToFunction[board[position].piece](position);
-
-                const solutionForCheck = performIntersection(threatMoves, newDefenseMoves);
-                const sendDefenseMoves = defenseMoves.concat(solutionForCheck);
-                defenseMoves = sendDefenseMoves;
-            }
-        }
-        checkDefense = defenseMoves;
-        const allDefense = kingEvasionMoves.concat(checkDefense);
-        if (allDefense.length === 0 && threatMoves.length > 0) {
-            checkDisplay.textContent = "Checkmate";
-            game = false;
-        } 
-        else {
-            displayBoard();
-        } 
+function checkChecker() {
+  if (!isKingSafe()) {
+    check = true;
+    checkDisplay.textContent = "You're in check";
+    setCheckDefense();
+    if (checkDefense.length === 0) {
+      checkDisplay.textContent = "Checkmate";
+      game = false;
     }
+  }
+}  
+
+function setCheckDefense() {
+  let kingPosition = findKing(currentPlayer);
+  const threatMoves = threatsToSpace(kingPosition);
+  for (let position in board) {
+    if (position === kingPosition) {
+        const kingMoves = king(position);
+        const saveKing = board[position];
+        board[position] = false;
+        for (let move of kingMoves) {
+            if (isSpaceSafe(move.space)) {
+                checkDefense.push(move);
+            }
+        board[position] = saveKing;    
+        }
+    } else if (board[position].color === currentPlayer) {
+        const potentialDefenseMoves = stringToFunction[board[position].piece](position);
+        const effectiveDefenseMoves = performIntersection(threatMoves, potentialDefenseMoves);
+        const defenseMoves = checkDefense.concat(effectiveDefenseMoves);
+        checkDefense = defenseMoves;
+    }
+  }
 }
-
-
-
-
 
 
 function performIntersection(arr1, arr2) {
