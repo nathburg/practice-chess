@@ -17,7 +17,7 @@ let whiteQueenSideCastling = true;
 let blackKingSideCastling = true;
 let blackQueenSideCastling = true;
 let check = false;
-let game = true;
+let isGameOn = true;
 let checkDefense = [];
 let currentPlayer = 'white';
 
@@ -47,10 +47,10 @@ const stringToFunction = {
 
 let pastMoves = ['ready', 'set'];
 
-displayNewState();
+refreshDisplay();
 
-function displayNewState() {
-  if (game) {
+function refreshDisplay() {
+  if (isGameOn) {
     displayBoard();
     displayPrisoners();
   }
@@ -104,7 +104,7 @@ function renderPlayable(position) {
   if (board[position].color === currentPlayer) {  
     const positionEl = document.getElementById(position);
           positionEl.addEventListener('click', () => {
-              displayBoard();
+              refreshDisplay();
               let moves = stringToFunction[board[position].piece](position);         
                   if (check) {
                   moves = performIntersection(moves, checkDefense);
@@ -141,7 +141,7 @@ function moveButton(currentPosition, targetPosition) {
         board[targetPosition] = saveCurrentPiece;
         movePieceSound();
         changePlayer();
-        displayBoard();
+        refreshDisplay();
         checkDefense = [];
         check = false;
         checkDisplay.textContent = '';
@@ -153,7 +153,6 @@ function moveButton(currentPosition, targetPosition) {
     } else {
       board[currentPosition] = saveCurrentPiece;
       board[targetPosition] = saveTargetPiece;
-      displayBoard();
     }
 }
 
@@ -179,7 +178,7 @@ function attackButton(currentPosition, targetPosition) {
         }
         pastMoves.push([currentPosition, targetPosition]); 
         changePlayer();
-        displayBoard();
+        refreshDisplay();
         checkDefense = [];
         check = false;
         checkChecker();
@@ -219,7 +218,7 @@ function enPassantButton(currentPosition, targetPosition) {
         whiteCaptured.push(saveEnemyPiece);
       }
       changePlayer();
-      displayNewState();
+      refreshDisplay();
     })
   }
   board[currentPosition] = saveCurrentPiece;
@@ -565,7 +564,7 @@ function checkChecker() {
     setCheckDefense();
     if (checkDefense.length === 0) {
       checkDisplay.textContent = "Checkmate";
-      game = false;
+      isGameOn = false;
     }
   }
 }  
