@@ -47,7 +47,6 @@ const stringToFunction = {
 
 
 
-const letterArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
 
 let kings = {
@@ -60,8 +59,10 @@ let pastMoves = ['ready', 'set'];
 displayNewState();
 
 function displayNewState() {
-  displayBoard();
-  displayPrisoners();
+  if (game) {
+    displayBoard();
+    displayPrisoners();
+  }
 }
 
 function displayBoard() {
@@ -95,7 +96,7 @@ function displayNewBoardState() {
     getPosition.replaceWith(newPosition);
     if (board[position]) {
       newPosition.textContent = `${board[position].image}`;
-    renderPlayable(position);
+      renderPlayable(position);
     }
   }
 }    
@@ -111,31 +112,18 @@ function displayPrisoners() {
 function renderPlayable(position) {
   if (board[position].color === currentPlayer) {  
     const positionEl = document.getElementById(position);
-      if (game) {
           positionEl.addEventListener('click', () => {
               displayBoard();
               let moves = stringToFunction[board[position].piece](position);         
-              if (board[position].piece === 'king') {
-                  if (currentPlayer === 'white' && whiteKingSideCastling === true && board.f1 === false && board.g1 === false && board.h1.piece === 'rook') {
-                      moveButton('e1', 'g1')
-                  }
-                  // white castling queen side
-                  if (currentPlayer === 'white' && whiteQueenSideCastling === true && board.a1.piece === 'rook' && board.b1 === false && board.c1 === false && board.d1 === false) {
-                      moveButton('e1', 'c1')
-                  }
-                  // black castling king side
-                  if (currentPlayer === 'black' && blackKingSideCastling === true && board.f8 === false && board.g8 === false && board.h8.piece === 'rook') {
-                      moveButton('e8', 'g8')
-                  }  
-                  // black castling queen side
-                  if (currentPlayer === 'black' && blackQueenSideCastling === true && board.a8.piece === 'rook' && board.b8 === false && board.c8 === false && board.d8 === false) {
-                      moveButton('e8', 'c8')
-                  } 
+              if (board[position].piece === 'king') { 
                   let safeMoves = [];
                   for (let move of moves) {
-                      if (checkChecker(move.space)) {
+                      const saveKing = board[position];
+                      board[position] = false;
+                      if (isSpaceThreatened(move.space)) {
                           safeMoves.push(move);
                       }
+                      board[position] = saveKing;
                   }
                   moves = safeMoves;
                   console.log(moves);
@@ -156,13 +144,12 @@ function renderPlayable(position) {
                   }
               }
           });
-      }
+      
     }  
 }
 
 function enPassantButton(currentPosition, targetPosition) {
   const targetPositionEl = document.getElementById(targetPosition);
-  targetPositionEl.textContent = 'x';
   const findEnemy = {
     white: minusOne,
     black: plusOne
@@ -172,227 +159,97 @@ function enPassantButton(currentPosition, targetPosition) {
   const enemyPosition = coordsToString([enemyX, enemyY]);
   const saveCurrentPiece = board[currentPosition];
   const saveEnemyPiece = board[enemyPosition];
-  
-  targetPositionEl.addEventListener('click', () => {
-    takePieceSound();
-    board[currentPosition] = false;
-    board[targetPosition] = saveCurrentPiece;
-    board[enemyPosition] = false;
-    if (currentPlayer === 'white') {
-      blackCaptured.push(saveEnemyPiece);
-    } else {
-      whiteCaptured.push(saveEnemyPiece);
-    }
-    changePlayer();
-    displayNewState();
-  })
+  board[currentPosition] = false;
+  board[targetPosition] = saveCurrentPiece;
+  board[enemyPosition] = false;
+  if (isKingSafe) {
+    targetPositionEl.textContent = 'x';
+    targetPositionEl.addEventListener('click', () => {
+      takePieceSound();
+      board[currentPosition] = false;
+      board[targetPosition] = saveCurrentPiece;
+      board[enemyPosition] = false;
+      if (currentPlayer === 'white') {
+        blackCaptured.push(saveEnemyPiece);
+      } else {
+        whiteCaptured.push(saveEnemyPiece);
+      }
+      changePlayer();
+      displayNewState();
+    })
+  }
+  board[currentPosition] = saveCurrentPiece;
+  board[targetPosition] = false;
+  board[enemyPosition] = saveEnemyPiece;
 }
 
 //promotion first, then castling
 
 function moveButton(currentPosition, targetPosition) {
     const targetPositionEl = document.getElementById(targetPosition);
-    targetPositionEl.textContent = 'o';
     const saveCurrentPiece = board[currentPosition];
     const saveTargetPiece = board[targetPosition];
-    targetPositionEl.addEventListener('click', () => {
+    board[currentPosition] = false;
+    board[targetPosition] = saveCurrentPiece;
+    if (isKingSafe()) {
+      targetPositionEl.textContent = 'o';
+      targetPositionEl.addEventListener('click', () => {
         saveGameBtn.classList.remove('game-saved');
         saveGameBtn.classList.add('save-game-btn');
         saveGameBtn.textContent = 'SAVE GAME';
-        movePieceSound();
-//complete check conditions for edge cases
-        let spot7 = '';
-        let spot8 = '';
-        spot7 = stringToCoords(currentPosition);
-        spot8 = stringToCoords(targetPosition);
-
-        if (board[targetPosition].piece === 'king')  {
-            if (currentPlayer === 'white') {
-                if (targetPosition != 'g1') {
-                    whiteKingSideCastling = false;
-                    whiteQueenSideCastling = false;
-                }
-            }
-        }
-        if (board[targetPosition].piece === 'king')  {
-            if (currentPlayer === 'black') {
-                if (targetPosition != 'c8') {
-                    blackKingSideCastling = false;
-                    blackQueenSideCastling = false;
-                }
-            }
-        }
-
-    // make castling impossible if white or black rooks move
-    // need to clarify which rook has moved, currently if any white rook moves white can no longer castle (vice versa)
-        if (board[targetPosition].piece === 'rook')  {
-            if (currentPlayer === 'white') {
-                whiteKingSideCastling = false;
-                whiteQueenSideCastling = false;
-            }
-        }
-        if (board[targetPosition].piece === 'rook')  {
-            if (currentPlayer === 'black') {
-                blackKingSideCastling = false;
-                blackQueenSideCastling = false;
-            }
-        }
-        
-        if (board[currentPosition].piece === 'pawn' && spot7[1] === 7 && spot8[1] === 8) {
-            let test = [];
-            if (currentPlayer === 'white') {
-                test = { 
-                    color: 'white',
-                    piece: 'queen',
-                    image: '♕'
-                    } 
-                    board[currentPosition] = false;
-                    board[targetPosition] = test;
-            }
-        } 
-        if (board[currentPosition].piece === 'pawn' && spot7[1] === 2 && spot8[1] === 1) {
-            let test = [];
-            if (currentPlayer === 'black') {
-                test = { 
-                    color: 'black',
-                    piece: 'queen',
-                    image: '♛'
-                    } 
-                    board[currentPosition] = false;
-                    board[targetPosition] = test;
-            }
-        }
-            // pastMoves.push([currentPosition, targetPosition]);  
-            // const savePiece = board[currentPosition];
-            // board[currentPosition] = false;
-            // board[targetPosition] = savePiece;
-            // console.log(board[targetPosition], savePiece)
-        if (whiteKingSideCastling === true && currentPosition === 'e1' && targetPosition === 'g1') {
-            board['f1'] = board['h1']
-            board['h1'] = false;
-            whiteKingSideCastling = false;
-        }
-        if (whiteQueenSideCastling === true && currentPosition === 'e1' && targetPosition === 'c1') {
-            board['d1'] = board['a1']
-            board['a1'] = false;
-            whiteQueenSideCastling = false;
-        }
-        if (blackKingSideCastling === true && currentPosition === 'e8' && targetPosition === 'g8') {
-            board['f8'] = board['h8']
-            board['h8'] = false;
-            blackKingSideCastling = false;
-        }
-        if (blackQueenSideCastling === true && currentPosition === 'e8' && targetPosition === 'c8') {
-            board['d8'] = board['a8']
-            board['a8'] = false;
-            blackQueenSideCastling = false;
-        }
-        else {
         board[currentPosition] = false;
         board[targetPosition] = saveCurrentPiece;
-        }
-        // the  below should go after all edge conditions, maybe? Or not
-        if (partialKingCheck()) {
-            changePlayer();
-            displayBoard();
-            checkDefense = [];
-            check = false;
-            checkDisplay.textContent = '';
-            fullCheck();
-            pastMoves.push([currentPosition, targetPosition]); 
-
-        } else {
-            board[currentPosition] = saveCurrentPiece;
-            board[targetPosition] = saveTargetPiece;
-            displayBoard();
-        }
-
-    })
+          movePieceSound();
+          changePlayer();
+          displayBoard();
+          checkDefense = [];
+          check = false;
+          checkDisplay.textContent = '';
+          fullCheck();
+          pastMoves.push([currentPosition, targetPosition]);
+      })
+    board[currentPosition] = saveCurrentPiece;
+    board[targetPosition] = saveTargetPiece;
+    } else {
+      board[currentPosition] = saveCurrentPiece;
+      board[targetPosition] = saveTargetPiece;
+      displayBoard();
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function attackButton(currentPosition, targetPosition) {
     const saveCurrentPiece = board[currentPosition];
     const saveTargetPiece = board[targetPosition];
     const targetPositionEl = document.getElementById(targetPosition);
-    targetPositionEl.textContent = `x${board[targetPosition].image}`;
-    
-    targetPositionEl.addEventListener('click', () => {
+    board[currentPosition] = false;
+    board[targetPosition] = saveCurrentPiece;
+    if (isKingSafe()) {
+      targetPositionEl.textContent = `x${board[targetPosition].image}`;
+      targetPositionEl.addEventListener('click', () => {
         saveGameBtn.classList.remove('game-saved');
         saveGameBtn.classList.add('save-game-btn');
         saveGameBtn.textContent = 'SAVE GAME';
-        takePieceSound();
-
-        let spot7 = '';
-        let spot8 = '';
-        spot7 = stringToCoords(currentPosition);
-        spot8 = stringToCoords(targetPosition); 
-        const savePiece = board[targetPosition];
-        if (board[currentPosition].piece === 'pawn' && spot7[1] === 7 && spot8[1] === 8) {
-            console.log(currentPlayer);
-            let test = [];
-            if (currentPlayer === 'white') {
-                console.log('in if')
-                test = { 
-                    color: 'white',
-                    piece: 'queen',
-                    image: '♕'
-                    } 
-                // console.log(test);
-                // console.log(currentPosition);
-                // console.log(targetPosition);
-                board[currentPosition] = false;
-                board[targetPosition] = test;
-            }
-        } 
-        else if (board[currentPosition].piece === 'pawn' && spot7[1] === 2 && spot8[1] === 1) {
-            console.log('in if')
-            let test = [];
-            if (currentPlayer === 'black') {
-                test = { 
-                    color: 'black',
-                    piece: 'queen',
-                    image: '♛'
-                    } 
-                board[currentPosition] = false;
-                board[targetPosition] = test;
-            }
+        board[currentPosition] = false;
+        board[targetPosition] = saveCurrentPiece;
+        takePieceSound();   
+        if (saveTargetPiece.color === 'white') {
+            whiteCaptured.push(saveTargetPiece);
         } else {
-            board[targetPosition] = board[currentPosition];
-            board[currentPosition] = false;}   
-        if (partialKingCheck()) {
-            console.log(targetPosition)
-            if (saveTargetPiece.color === 'white') {
-                whiteCaptured.push(saveTargetPiece);
-            } else {
-                blackCaptured.push(saveTargetPiece);
-            }
-            pastMoves.push([currentPosition, targetPosition]); 
-            changePlayer();
-            displayBoard();
-            checkDefense = [];
-            check = false;
-            fullCheck();
-        } else {
+            blackCaptured.push(saveTargetPiece);
+        }
+        pastMoves.push([currentPosition, targetPosition]); 
+        changePlayer();
+        displayBoard();
+        checkDefense = [];
+        check = false;
+        fullCheck();
+      })
+    board[currentPosition] = saveCurrentPiece;
+    board[targetPosition] = saveTargetPiece;  
+    } else {
             board[currentPosition] = saveCurrentPiece;
             board[targetPosition] = saveTargetPiece;
         }
-    })
 }
 
 
@@ -623,12 +480,14 @@ function inRange(number) {
 
 
 function stringToCoords(string) {
+    const letterArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const splitString = string.split('');
     const coords = [letterArray.indexOf(splitString[0])+1, Number(splitString[1])]
     return coords;
 }
 
 function coordsToString(coords) {
+    const letterArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     coords[0] = letterArray[coords[0]-1];
     return coords.join('');
 }
@@ -662,9 +521,9 @@ function polarityChecker(number) {
     }
 }
 
-function partialKingCheck() {
+function isKingSafe() {
     const theKing = findKing(currentPlayer);
-    return partialCheck(theKing).length === 0
+    return threatsToSpace(theKing).length === 0
 }
 
 function findKing(color) {
@@ -681,16 +540,14 @@ function findKing(color) {
     }
 }
 
-function partialCheck(space) {
+function threatsToSpace(space) {
     let threatMoves = [];
     const savePiece = board[space];
     board[space] = {
-        color: currentPlayer,
-        piece: 'pawn',
-        image: '♟'
+        color: currentPlayer
         }
-    const kingX = stringToCoords(space)[0];
-    const kingY = stringToCoords(space)[1];
+    const spaceX = stringToCoords(space)[0];
+    const spaceY = stringToCoords(space)[1];
 
     changePlayer();
     for (let position in board) {
@@ -708,8 +565,8 @@ function partialCheck(space) {
 
                             const threatX = stringToCoords(position)[0];
                             const threatY = stringToCoords(position)[1];
-                            const deltaXFunction = polarityChecker(threatX-kingX);
-                            const deltaYFunction = polarityChecker(threatY-kingY);
+                            const deltaXFunction = polarityChecker(threatX-spaceX);
+                            const deltaYFunction = polarityChecker(threatY-spaceY);
                             changePlayer();
                             const newThreatMoves = threatMoves.concat(continueMove(space, deltaXFunction, deltaYFunction)) 
                             threatMoves = newThreatMoves;
@@ -727,8 +584,9 @@ function partialCheck(space) {
 }
 
 
-function checkChecker(position) {
-    return partialCheck(position).length === 0;
+
+function isSpaceThreatened(position) {
+    return threatsToSpace(position).length === 0;
 }
 
 
@@ -736,7 +594,7 @@ function fullCheck() {
     let kingPosition = findKing(currentPlayer);
     let defenseMoves = [];
     let kingEvasionMoves = [];
-    const threatMoves = partialCheck(kingPosition);
+    const threatMoves = threatsToSpace(kingPosition);
     if (threatMoves.length > 0) {
         check = true;
         
@@ -747,7 +605,7 @@ function fullCheck() {
             if (position === kingPosition) {
                 const kingMoves = king(position);
                 for (let move of kingMoves) {
-                    if (checkChecker(move.space)) {
+                    if (isSpaceThreatened(move.space)) {
                         kingEvasionMoves.push(move);
                     }
                 }
