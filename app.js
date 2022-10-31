@@ -45,15 +45,6 @@ const stringToFunction = {
 }
 
 
-
-
-
-
-let kings = {
-    white: 'e1',
-    black: 'e8'
-}
-
 let pastMoves = ['ready', 'set'];
 
 displayNewState();
@@ -115,24 +106,10 @@ function renderPlayable(position) {
           positionEl.addEventListener('click', () => {
               displayBoard();
               let moves = stringToFunction[board[position].piece](position);         
-              if (board[position].piece === 'king') { 
-                  let safeMoves = [];
-                  for (let move of moves) {
-                      const saveKing = board[position];
-                      board[position] = false;
-                      if (isSpaceThreatened(move.space)) {
-                          safeMoves.push(move);
-                      }
-                      board[position] = saveKing;
-                  }
-                  moves = safeMoves;
-                  console.log(moves);
-              }
-                  if (check && stringToFunction[board[position].piece] != king) {
-                  moves = performIntersection(moves, checkDefense)
+                  if (check) {
+                  moves = performIntersection(moves, checkDefense);
               }
               for (let move of moves) {
-                  console.log(move)
                   if (move.condition === 'empty') {
                       moveButton(position, move.space);
                   }
@@ -146,6 +123,74 @@ function renderPlayable(position) {
           });
       
     }  
+}
+
+function moveButton(currentPosition, targetPosition) {
+    const targetPositionEl = document.getElementById(targetPosition);
+    const saveCurrentPiece = board[currentPosition];
+    const saveTargetPiece = board[targetPosition];
+    board[currentPosition] = false;
+    board[targetPosition] = saveCurrentPiece;
+    if (isKingSafe()) {
+      console.log(targetPosition, threatsToSpace(targetPosition));
+      targetPositionEl.textContent = 'o';
+      targetPositionEl.addEventListener('click', () => {
+        saveGameBtn.classList.remove('game-saved');
+        saveGameBtn.classList.add('save-game-btn');
+        saveGameBtn.textContent = 'SAVE GAME';
+        board[currentPosition] = false;
+        board[targetPosition] = saveCurrentPiece;
+        movePieceSound();
+        changePlayer();
+        displayBoard();
+        checkDefense = [];
+        check = false;
+        checkDisplay.textContent = '';
+        fullCheck();
+        pastMoves.push([currentPosition, targetPosition]);
+      })
+    board[currentPosition] = saveCurrentPiece;
+    board[targetPosition] = saveTargetPiece;
+    } else {
+      board[currentPosition] = saveCurrentPiece;
+      board[targetPosition] = saveTargetPiece;
+      displayBoard();
+    }
+}
+
+function attackButton(currentPosition, targetPosition) {
+  const targetPositionEl = document.getElementById(targetPosition);
+    const saveCurrentPiece = board[currentPosition];
+    const saveTargetPiece = board[targetPosition];
+    board[currentPosition] = false;
+    board[targetPosition] = saveCurrentPiece;
+    if (isKingSafe()) {
+      targetPositionEl.textContent = `x${saveTargetPiece.image}`;
+      targetPositionEl.addEventListener('click', () => {
+        saveGameBtn.classList.remove('game-saved');
+        saveGameBtn.classList.add('save-game-btn');
+        saveGameBtn.textContent = 'SAVE GAME';
+        board[currentPosition] = false;
+        board[targetPosition] = saveCurrentPiece;
+        takePieceSound();   
+        if (saveTargetPiece.color === 'white') {
+            whiteCaptured.push(saveTargetPiece);
+        } else {
+            blackCaptured.push(saveTargetPiece);
+        }
+        pastMoves.push([currentPosition, targetPosition]); 
+        changePlayer();
+        displayBoard();
+        checkDefense = [];
+        check = false;
+        fullCheck();
+      })
+    board[currentPosition] = saveCurrentPiece;
+    board[targetPosition] = saveTargetPiece;  
+    } else {
+            board[currentPosition] = saveCurrentPiece;
+            board[targetPosition] = saveTargetPiece;
+        }
 }
 
 function enPassantButton(currentPosition, targetPosition) {
@@ -182,77 +227,6 @@ function enPassantButton(currentPosition, targetPosition) {
   board[targetPosition] = false;
   board[enemyPosition] = saveEnemyPiece;
 }
-
-//promotion first, then castling
-
-function moveButton(currentPosition, targetPosition) {
-    const targetPositionEl = document.getElementById(targetPosition);
-    const saveCurrentPiece = board[currentPosition];
-    const saveTargetPiece = board[targetPosition];
-    board[currentPosition] = false;
-    board[targetPosition] = saveCurrentPiece;
-    if (isKingSafe()) {
-      targetPositionEl.textContent = 'o';
-      targetPositionEl.addEventListener('click', () => {
-        saveGameBtn.classList.remove('game-saved');
-        saveGameBtn.classList.add('save-game-btn');
-        saveGameBtn.textContent = 'SAVE GAME';
-        board[currentPosition] = false;
-        board[targetPosition] = saveCurrentPiece;
-          movePieceSound();
-          changePlayer();
-          displayBoard();
-          checkDefense = [];
-          check = false;
-          checkDisplay.textContent = '';
-          fullCheck();
-          pastMoves.push([currentPosition, targetPosition]);
-      })
-    board[currentPosition] = saveCurrentPiece;
-    board[targetPosition] = saveTargetPiece;
-    } else {
-      board[currentPosition] = saveCurrentPiece;
-      board[targetPosition] = saveTargetPiece;
-      displayBoard();
-    }
-}
-
-function attackButton(currentPosition, targetPosition) {
-    const saveCurrentPiece = board[currentPosition];
-    const saveTargetPiece = board[targetPosition];
-    const targetPositionEl = document.getElementById(targetPosition);
-    board[currentPosition] = false;
-    board[targetPosition] = saveCurrentPiece;
-    if (isKingSafe()) {
-      targetPositionEl.textContent = `x${board[targetPosition].image}`;
-      targetPositionEl.addEventListener('click', () => {
-        saveGameBtn.classList.remove('game-saved');
-        saveGameBtn.classList.add('save-game-btn');
-        saveGameBtn.textContent = 'SAVE GAME';
-        board[currentPosition] = false;
-        board[targetPosition] = saveCurrentPiece;
-        takePieceSound();   
-        if (saveTargetPiece.color === 'white') {
-            whiteCaptured.push(saveTargetPiece);
-        } else {
-            blackCaptured.push(saveTargetPiece);
-        }
-        pastMoves.push([currentPosition, targetPosition]); 
-        changePlayer();
-        displayBoard();
-        checkDefense = [];
-        check = false;
-        fullCheck();
-      })
-    board[currentPosition] = saveCurrentPiece;
-    board[targetPosition] = saveTargetPiece;  
-    } else {
-            board[currentPosition] = saveCurrentPiece;
-            board[targetPosition] = saveTargetPiece;
-        }
-}
-
-
     
 function pawn(position) {
     let moves = [];
@@ -319,8 +293,7 @@ function pawn(position) {
             && inspectSpace(coordsToString([x, inspectSpace(coordsToString([x, doubleMove(y)]))])).condition === 'empty'
             ) {moves.push(inspectSpace(coordsToString([x, doubleMove(y)])))}
           }
-    }
-    
+    }    
     return moves;
     
 }  
@@ -505,8 +478,7 @@ function changePlayer() {
         currentPlayer = 'black';
     } else {
         currentPlayer = 'white';
-    }
-    
+    }  
 }
 
 function polarityChecker(number) {
@@ -545,7 +517,7 @@ function threatsToSpace(space) {
     const savePiece = board[space];
     board[space] = {
         color: currentPlayer
-        }
+    }
     const spaceX = stringToCoords(space)[0];
     const spaceY = stringToCoords(space)[1];
 
@@ -558,11 +530,10 @@ function threatsToSpace(space) {
                     if (move.space === space) {
 
                         if (board[position].piece === 'pawn' || board[position].piece === 'knight') {
-                            threatMoves.push({space: position, condition: 'enemy'})
-                        }
-                        else if (board[position].piece != 'king') {
-
-
+                            threatMoves.push({space: position, condition: 'enemy'});
+                        } else if (board[position].piece === 'king') {
+                            threatMoves.push({space: position, condition: 'king'});
+                        } else {
                             const threatX = stringToCoords(position)[0];
                             const threatY = stringToCoords(position)[1];
                             const deltaXFunction = polarityChecker(threatX-spaceX);
