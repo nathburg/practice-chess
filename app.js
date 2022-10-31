@@ -24,21 +24,21 @@ let castling = {
   white: {
     a1: {
       isActive: true,
-      spotsBetween: ['b1', 'c1', 'd1']
+      spacesBetween: ['b1', 'c1', 'd1']
     },
     h1: {
       isActive: true,
-      spotsBetween: ['f1', 'g1']
+      spacesBetween: ['f1', 'g1']
     }
   },
   black: {
     a8: {
       isActive: true,
-      spotsBetween: ['b8', 'c8', 'd8']
+      spacesBetween: ['b8', 'c8', 'd8']
     },
     h8: {
       isActive: true,
-      spotsBetween: ['f8', 'g8']
+      spacesBetween: ['f8', 'g8']
     }
   }
 }
@@ -64,6 +64,51 @@ const stringToFunction = {
     'bishop': bishop,
     'queen': queen,
     'king': king
+}
+
+const castlingOptions = {
+  a1: {
+    rook: 'c1',
+    king: 'b1'
+  },
+  h1: {
+    rook: 'f1',
+    king: 'g1'
+  },
+  a8: {
+    rook: 'c8',
+    king: 'b8' 
+  },
+  h8: {
+    rook: 'f8',
+    king: 'g8'
+  }
+}
+
+const kingPiece = {
+  white: {
+    color: 'white',
+    piece: 'king',
+    image: '♔'
+    },
+    black: { 
+      color: 'black',
+      piece: 'king',
+      image: '♚'
+    }
+}
+
+const rookPiece = {
+  white: {
+    color: 'white',
+    piece: 'rook',
+    image: '♖'
+    },
+  black: {
+    color: 'black',
+    piece: 'rook',
+    image: '♜'
+    }
 }
 
 
@@ -161,6 +206,18 @@ function moveButton(currentPosition, targetPosition) {
         saveGameBtn.textContent = 'SAVE GAME';
         board[currentPosition] = false;
         board[targetPosition] = saveCurrentPiece;
+        if (saveCurrentPiece.piece === 'king') {
+          for (let rook in castling[currentPlayer]) {
+            castling[currentPlayer][rook].isActive = false;
+          }
+        }
+        if (saveCurrentPiece.piece === 'rook') {
+          for (let rook in castling[currentPlayer]) {
+            if (currentPosition === rook) {
+              castling[currentPlayer][rook].isActive = false;
+            }
+          }
+        }
         movePieceSound();
         changePlayer();
         refreshDisplay();
@@ -192,6 +249,18 @@ function attackButton(currentPosition, targetPosition) {
         saveGameBtn.textContent = 'SAVE GAME';
         board[currentPosition] = false;
         board[targetPosition] = saveCurrentPiece;
+        if (saveCurrentPiece.piece === 'king') {
+          for (let rook in castling[currentPlayer]) {
+            castling[currentPlayer][rook].isActive = false;
+          }
+        }
+        if (saveCurrentPiece.piece === 'rook') {
+          for (let rook in castling[currentPlayer]) {
+            if (currentPosition === rook) {
+              castling[currentPlayer][rook].isActive = false;
+            }
+          }
+        }
         takePieceSound();   
         if (saveTargetPiece.color === 'white') {
             whiteCaptured.push(saveTargetPiece);
@@ -349,9 +418,28 @@ function king(position) {
     if (testSpace(x-1, y)) {
         moves.push(testSpace(x-1, y))
     }
-    
+    console.log(currentPlayer)
+    // for (let rook in castling[currentPlayer]) {
+    //   console.log('castling[currentPlayer] ', castling[currentPlayer])
+    //   if (castling[currentPlayer][rook].isActive) {
+    //     for (let space of castling[currentPlayer][rook].spacesBetween) {
+    //       console.log('space between ', space)
+    //       changePlayer();
+    //       console.log('inspect ', currentPlayer, inspectSpace(space))
+    //       if (inspectSpace(space)) {
+    //         if (inspectSpace(space).condition === 'empty' && isSpaceSafe(space)) {
+    //           moves.push(
+    //             {'space': rook, condition: 'castling'}
+    //             )
+    //           }
+    //         }
+    //       }
+    //       changePlayer();
+    //       console.log(moves);
+    //   }    
+    // }
     return moves;
-}
+  }  
 
 function knight(position) {
     let moves = [];
