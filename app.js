@@ -20,6 +20,28 @@ let check = false;
 let isGameOn = true;
 let checkDefense = [];
 let currentPlayer = 'white';
+let castling = {
+  white: {
+    a1: {
+      isActive: true,
+      spotsBetween: ['b1', 'c1', 'd1']
+    },
+    h1: {
+      isActive: true,
+      spotsBetween: ['f1', 'g1']
+    }
+  },
+  black: {
+    a8: {
+      isActive: true,
+      spotsBetween: ['b8', 'c8', 'd8']
+    },
+    h8: {
+      isActive: true,
+      spotsBetween: ['f8', 'g8']
+    }
+  }
+}
 
 
 
