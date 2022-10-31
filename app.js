@@ -418,7 +418,7 @@ function king(position) {
     if (testSpace(x-1, y)) {
         moves.push(testSpace(x-1, y))
     }
-    console.log(currentPlayer)
+    console.log(currentPlayer === board[position].color)
     // for (let rook in castling[currentPlayer]) {
     //   console.log('castling[currentPlayer] ', castling[currentPlayer])
     //   if (castling[currentPlayer][rook].isActive) {
