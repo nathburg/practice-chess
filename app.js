@@ -24,21 +24,34 @@ let castling = {
   white: {
     a1: {
       isActive: true,
-      spacesBetween: ['b1', 'c1', 'd1']
+      spacesBetween: [
+        {space: 'b1', condition: 'empty'},
+        {space: 'c1', condition: 'empty'},
+        {space: 'd1', condition: 'empty'}
+      ]
     },
     h1: {
       isActive: true,
-      spacesBetween: ['f1', 'g1']
+      spacesBetween: [
+        {space: 'f1', condition: 'empty'},
+        {space: 'g1', condition: 'empty'}
+      ]
     }
   },
   black: {
     a8: {
       isActive: true,
-      spacesBetween: ['b8', 'c8', 'd8']
+      spacesBetween: [
+        {space: 'b8', condition: 'empty'}, 
+        {space: 'c8', condition: 'empty'}, 
+        {space: 'd8', condition: 'empty'}
+      ]
     },
     h8: {
       isActive: true,
-      spacesBetween: ['f8', 'g8']
+      spacesBetween: [
+        {space: 'f8', condition: 'empty'}, 
+        {space: 'g8', condition: 'empty'}]
     }
   }
 }
@@ -418,26 +431,25 @@ function king(position) {
     if (testSpace(x-1, y)) {
         moves.push(testSpace(x-1, y))
     }
-    console.log(currentPlayer === board[position].color)
-    // for (let rook in castling[currentPlayer]) {
-    //   console.log('castling[currentPlayer] ', castling[currentPlayer])
-    //   if (castling[currentPlayer][rook].isActive) {
-    //     for (let space of castling[currentPlayer][rook].spacesBetween) {
-    //       console.log('space between ', space)
-    //       changePlayer();
-    //       console.log('inspect ', currentPlayer, inspectSpace(space))
-    //       if (inspectSpace(space)) {
+    for (let rookPosition in castling[currentPlayer]) {
+      if (castling[currentPlayer][rookPosition].isActive) {
+        const castlingSpaces = performIntersection(rook(rookPosition), castling[currentPlayer][rookPosition].spacesBetween);
+        if (JSON.stringify(castlingSpaces) === JSON.stringify(castling[currentPlayer][rookPosition].spacesBetween)) {
+            moves.push({'space': rookPosition, condition: 'castling'});
+        }
+        // for (let space of castling[currentPlayer][rook].spacesBetween) {
+                // if (inspectSpace(space)) {
+                  // console.log(inspectSpace(space).condition === 'empty' && isSpaceSafe(space))
+                  // console.log('king ', king(space))
     //         if (inspectSpace(space).condition === 'empty' && isSpaceSafe(space)) {
-    //           moves.push(
-    //             {'space': rook, condition: 'castling'}
     //             )
     //           }
-    //         }
-    //       }
-    //       changePlayer();
-    //       console.log(moves);
-    //   }    
-    // }
+            // }
+          // }
+
+      }    
+    }
+    console.log(moves);
     return moves;
   }  
 
@@ -723,8 +735,6 @@ function performIntersection(arr1, arr2) {
     
 
 }
-
-
 
 
 
