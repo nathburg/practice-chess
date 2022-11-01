@@ -1,0 +1,239 @@
+* {
+    box-sizing: border-box;
+}
+
+main {
+    display: flex;
+    padding: 50px;
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-top: 20px;
+    justify-content: space-evenly;
+    border-radius: 8px;
+    border:5px solid  rgb(82, 55, 33);
+    /* background-color: rgb(220, 215, 201); */
+    background-image: url(../assets/redwood.jpg);
+    box-shadow: 10px 12px 10px 11px rgba(0,0,0,0.75);
+-webkit-box-shadow: 10px 12px 10px 11px rgba(0,0,0,0.75);
+-moz-box-shadow: 10px 12px 10px 11px rgba(0,0,0,0.75);
+    
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-family: 'Aboreto', cursive;
+    padding-left: 40px;
+    padding-right: 40px;
+    align-items: center;
+    background-color: rgb(44, 54, 57);
+    background-image: url(../assets/marble1.jpg);
+    color:rgb(44, 54, 57);; 
+    height: 75px;
+    margin: none;
+    font-weight: bold;
+    /* text-shadow: 2px 2px 2px rgb(221, 218, 208); */
+    box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+-webkit-box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+-moz-box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+
+}
+
+header a {
+    text-decoration: underline;
+    font-family: 'Aboreto', cursive;
+    color:rgb(44, 54, 57);; 
+    text-decoration: underline;
+    font-size: 16px;
+}
+
+.captured-pieces {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Aboreto', cursive;
+
+    grid-template-rows: 50% 50%;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(63, 78, 79);
+    background-image: url(../assets/green-felt.jpg);
+    color: black; 
+    font-weight: bold;
+    width: 250px;
+    padding: 40px;
+    border: 4px solid darkgoldenrod;
+    border-radius: 6px;
+    box-shadow: 8px 9px 10px -6px rgba(63,78,79,0.75);
+-webkit-box-shadow: 8px 9px 10px -6px rgba(63,78,79,0.75);
+-moz-box-shadow: 8px 9px 10px -6px rgba(63,78,79,0.75);
+}
+
+
+
+
+.table {
+    display: grid;
+    justify-content: center;
+    align-items: center;;
+    font-family: 'Aboreto', cursive;
+    background-image: url(../assets/marble1.jpg);
+    color: rgb(216, 204, 163); 
+    font-weight: bold;
+    width: 300px;
+    padding: 40px;
+    border: 4px solid goldenrod;
+    border-radius: 6px;
+    box-shadow: 10px 10px 10px 5px rgba(0,0,0,0.75);
+-webkit-box-shadow: 10px 10px 10px 5px rgba(0,0,0,0.75);
+-moz-box-shadow: 10px 10px 10px 5px rgba(0,0,0,0.75);
+}
+
+.table img {
+    height:130px;
+    width: 130px;
+    mix-blend-mode: multiply;
+}
+
+body {
+    background-color:rgb(162, 123, 92);
+    background-image: url(../assets/floor-pattern.jpg);
+}
+
+.board {
+    width:800;
+    justify-self: center;
+    
+    border: 4px solid rgb(29, 17, 8);
+    box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+-webkit-box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+-moz-box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+}
+
+.square {
+    height: 100px;
+    width: 100px;
+    margin: 0px;
+    padding:0px;
+    font-size: 40px;
+    cursor: pointer;
+    text-shadow: 3px 3px 4px rgb(63, 78, 79);
+}
+
+.square:hover {
+    transition: all .2s ease-in-out;
+    transform: scale(1.03);
+}
+
+.black {
+    /* background-color: darkgoldenrod; */
+    background-image: url(../assets/chess-square.jpg);
+}
+
+.white {
+    /* background-color: beige; */
+    background-image: url(../assets/white-square.jpg);
+}
+
+.row {
+    display:flex;
+}
+
+.save-container {
+    display:flex;
+    justify-content: space-around;
+    margin: 10px;
+    margin-right: 20px;
+    text-align: center;
+    align-items: center;
+
+    
+
+}
+
+audio {
+    height: 30px;
+    margin: 50px;
+}
+
+.save-game-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    width: 200px;
+    height: 30px;
+    background-image: url(../assets/white-square.jpg);
+    font-family: 'Aboreto', cursive;
+    color: black;
+    border: 3px solid goldenrod;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+
+
+}
+.game-saved {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    width: 200px;
+    height: 30px;
+    background-image: url(../assets/dark-marble.jpg);
+    font-family: 'Aboreto', cursive;
+    color: goldenrod;
+    border: 3px solid goldenrod;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+
+}
+
+#save-game-btn:hover {
+    transition: all .2s ease-in-out;
+    transform: scale(1.04);
+}
+
+.white-captured {
+    padding: 8px;
+    height: 200px;
+    width: 150px;
+    background-image: url(../assets/light-wood.jpg);
+    border: 4px solid black;
+    border-radius: 20px;
+    display: flex;
+    font-size: 30px;
+    flex-wrap: wrap;
+    box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+-webkit-box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+-moz-box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+text-shadow: 3px 3px 4px rgb(63, 78, 79);
+
+}
+
+.black-captured {
+    padding: 8px;
+    background-image: url(../assets/light-wood.jpg);
+    border: 4px solid rgb(82, 55, 33);;
+    border-radius: 20px;
+    height: 200px;
+    width: 150px;
+    display: flex;
+    font-size: 30px;
+    flex-wrap: wrap;
+    border: 4px solid rgb(29, 17, 8);
+    box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+-webkit-box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+-moz-box-shadow: 12px 11px 10px -7px rgba(0,0,0,1);
+text-shadow: 3px 3px 4px rgb(63, 78, 79);
+
+}
+
+

@@ -1,0 +1,130 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color:rgb(63, 78, 79); 
+    background-image: url(../assets/redwood.jpg);
+    
+}
+
+main {
+    display: grid;
+    grid-template-rows: 25% 10% auto;
+    justify-content: center;
+    margin-top: 20px;
+    height: 900px;
+    
+}
+
+.new-game-form {
+    font-family: 'Aboreto', cursive;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    color: black;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    border: 2px solid black;
+    background-image: url(../assets/marble1.jpg);
+    padding: 40px;
+    font-size: 30px;;
+    margin: 20px;
+    border: 4px solid darkgoldenrod; 
+    border-radius: 6px;
+    box-shadow: 6px 8px 9px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 6px 8px 9px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 6px 8px 9px 0px rgba(0,0,0,0.75);
+}
+
+.new-game-form label {
+    margin: 10px;
+}
+
+.new-game-form button {
+    padding: 10px;
+    font-family: 'Aboreto', cursive;
+    background-image: url(../assets/white-square.jpg);
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+}
+
+.new-game-form button:hover {
+    transform: scale(1.05);
+}
+
+
+.games-container {
+    font-family: 'Aboreto', cursive;
+    font-weight: bold;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    border: 4px solid darkgoldenrod;
+    color: darkgoldenrod;
+    border-radius: 6px;
+    width: 1000px;
+    background-image: url(../assets/marble1.jpg);
+
+}
+
+.games-container button {
+    border: 2px solid black;
+    border-radius: 4px;
+    box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 4px 4px 9px 0px rgba(0,0,0,0.75);
+    cursor: pointer;
+    padding: 5px;
+    font-family: 'Aboreto', cursive;
+    background-image: url(../assets/white-square.jpg);
+    font-weight: bold;
+    
+}
+
+.games-container button:hover {
+    transform: scale(1.05);
+}
+
+.games-container div {
+    margin: 20px;
+    padding: 30px;
+    width: 300px;
+    background-image: url(../assets/redwood.jpg);
+    border-radius: 6px;
+    border: 4px solid darkgoldenrod;
+    box-shadow: 6px 8px 9px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 6px 8px 9px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 6px 8px 9px 0px rgba(0,0,0,0.75);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 40px;
+    padding-right: 40px;
+    font-family: 'Aboreto', cursive;
+    background-image: url(../assets/marble1.jpg);
+    height: 70px;
+    color: rgb(63, 78, 79);
+    box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+-webkit-box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+-moz-box-shadow: 8px 9px 10px -6px rgba(0,0,0,0.75);
+
+}
+
+h2 {
+    text-align: center;
+    font-family: 'Aboreto', cursive;
+    font-weight: bold;
+    color: darkgoldenrod; 
+    text-decoration: underline;
+
+}
