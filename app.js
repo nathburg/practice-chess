@@ -199,6 +199,9 @@ function renderPlayable(position) {
                   if (move.condition === 'en passant') {
                     enPassantButton(position, move.space)
                   }
+                  if (move.condition === 'castling') {
+                    castlingButton(position, move.space)
+                  }
               }
           });
       
@@ -328,6 +331,66 @@ function enPassantButton(currentPosition, targetPosition) {
   board[currentPosition] = saveCurrentPiece;
   board[targetPosition] = false;
   board[enemyPosition] = saveEnemyPiece;
+}
+
+function castlingButton(currentPosition, targetPosition) {
+  const castlingOptions = {
+    a1: {
+      rook: 'c1',
+      king: 'b1'
+    },
+    h1: {
+      rook: 'f1',
+      king: 'g1'
+    },
+    a8: {
+      rook: 'c8',
+      king: 'b8' 
+    },
+    h8: {
+      rook: 'f8',
+      king: 'g8'
+    }
+  }
+  const saveKingPosition = findKing();
+  console.log(saveKingPosition);
+  const rookSpot = castlingOptions[targetPosition].rook;
+  const kingSpot = castlingOptions[targetPosition].king;
+  board[saveKingPosition] = false;
+  board[targetPosition] = false;
+  board[rookSpot] = rookPiece[currentPlayer];
+  board[kingSpot] = kingPiece[currentPlayer];
+  if (isKingSafe()) {
+    const kingSpotEl = document.getElementById(kingSpot);
+    kingSpotEl.textContent = 'o';
+    kingSpotEl.addEventListener('click', () => {
+      // saveGameBtn.classList.remove('game-saved');
+      // saveGameBtn.classList.add('save-game-btn');
+      // saveGameBtn.textContent = 'SAVE GAME';
+      // for (let rook in castling[currentPlayer]) {
+      //   castling[currentPlayer][rook].isActive = false;
+      // }
+      board[saveKingPosition] = false;
+      board[targetPosition] = false;
+      board[rookSpot] = rookPiece[currentPlayer];
+      board[kingSpot] = kingPiece[currentPlayer];
+      console.log(saveKingPosition, board);
+      movePieceSound();
+      changePlayer();
+      refreshDisplay();
+      checkChecker();
+      // pastMoves.push([currentPosition, targetPosition]); //this is weird, but still works
+    })
+  board[saveKingPosition] = kingPiece[currentPlayer];
+  board[targetPosition] = rookPiece[currentPlayer];
+  board[rookSpot] = false;
+  board[kingSpot] = false;
+  } else {
+    board[saveKingPosition] = kingPiece[currentPlayer];
+    board[targetPosition] = rookPiece[currentPlayer];
+    board[rookSpot] = false;
+    board[kingSpot] = false;
+  }
 }
     
 function pawn(position) {
@@ -618,10 +681,10 @@ function isKingSafe() {
     return threatsToSpace(theKing).length === 0
 }
 
-function findKing(color) {
+function findKing() {
     for (let position in board) {
         if (stringToFunction[board[position].piece] === king
-            && board[position].color === color) {
+            && board[position].color === currentPlayer) {
             return position;
         }
     }
