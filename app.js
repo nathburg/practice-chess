@@ -500,16 +500,6 @@ function king(position) {
         if (JSON.stringify(castlingSpaces) === JSON.stringify(castling[currentPlayer][rookPosition].spacesBetween)) {
             moves.push({'space': rookPosition, condition: 'castling'});
         }
-        // for (let space of castling[currentPlayer][rook].spacesBetween) {
-                // if (inspectSpace(space)) {
-                  // console.log(inspectSpace(space).condition === 'empty' && isSpaceSafe(space))
-                  // console.log('king ', king(space))
-    //         if (inspectSpace(space).condition === 'empty' && isSpaceSafe(space)) {
-    //             )
-    //           }
-            // }
-          // }
-
       }    
     }
     console.log(moves);
