@@ -2,7 +2,7 @@ import { initialBoard } from "./initial-state.js";
 
 const saveGameBtn = document.getElementById('save-game-btn');
 
-import { renderCapturedBlack, renderCapturedwhite } from "./render-utils.js";
+import { renderPiece } from "./render-utils.js";
 
 const blackCapturedContainer = document.querySelector('.black-captured')
 const whiteCapturedContainer = document.querySelector('.white-captured')
@@ -10,14 +10,13 @@ const music = document.getElementById('music');
 const checkDisplay = document.getElementById('check');
 const signOutLink = document.getElementById('sign-out-link');
 
-// const state = {
-//   captured: {
-//     white: [],
-//     black: []
-//   }
-// }
-let whiteCaptured = [];
-let blackCaptured = [];
+let capturedPieces = {
+  white: [],
+  black: []
+}
+
+// let whiteCaptured = [];
+// let blackCaptured = [];
 let check = false;
 let isGameOn = true;
 let checkDefense = [];
@@ -177,8 +176,9 @@ function displayNewBoardState() {
 function displayPrisoners() {
   blackCapturedContainer.textContent = '';
   whiteCapturedContainer.textContent = '';
-  displayBlackCaptured();
-  displayWhiteCaptured();
+  // displayBlackCaptured();
+  // displayWhiteCaptured();
+  displayCapturedPieces();
 }
 
 
@@ -193,13 +193,13 @@ function renderPlayable(position) {
               }
               for (let move of moves) {
                   if (move.condition === 'empty') {
-                      basicMoveButton(position, move.space, false);
+                      basicMoveButton(position, move.space, 'move');
                   }
                   if (move.condition === 'enemy') {
-                      basicMoveButton(position, move.space, true);
+                      basicMoveButton(position, move.space, 'attack');
                   }
                   if (move.condition === 'en passant') {
-                    enPassantButton(position, move.space)
+                    basicMoveButton(position, move.space, 'enPassant');
                   }
                   if (move.condition === 'castling') {
                     castlingButton(position, move.space)
@@ -210,90 +210,84 @@ function renderPlayable(position) {
     }  
 }
 
-function basicMoveButton(currentPosition, targetPosition, isAttack) {
+
+
+function basicMoveButton(currentPosition, targetPosition, moveType) {
     const targetPositionEl = document.getElementById(targetPosition);
     const saveCurrentPiece = board[currentPosition];
     const saveTargetPiece = board[targetPosition];
+    let saveEnemyPiece;
     board[currentPosition] = false;
     board[targetPosition] = saveCurrentPiece;
-    if (isKingSafe()) {
-      isAttack ? targetPositionEl.textContent = `x${saveTargetPiece.image}`
-        : targetPositionEl.textContent = 'o';
-      targetPositionEl.addEventListener('click', () => {
-        saveGameBtn.classList.remove('game-saved');
-        saveGameBtn.classList.add('save-game-btn');
-        saveGameBtn.textContent = 'SAVE GAME';
-        board[currentPosition] = false;
-        board[targetPosition] = saveCurrentPiece;
-        if (saveCurrentPiece.piece === 'king') {
-          for (let rook in castling[currentPlayer]) {
-            castling[currentPlayer][rook].isActive = false;
-          }
+    let enemyPosition;
+    
+    const moveOptions = {
+        move: {
+            display: 'o',
+            sound: movePieceSound
+        },
+        attack: {
+            display: `x${saveTargetPiece.image}`,
+            sound: takePieceSound
+        },
+        enPassant: {
+            display: 'x',
+            sound: takePieceSound
         }
-        if (saveCurrentPiece.piece === 'rook') {
-          for (let rook in castling[currentPlayer]) {
-            if (currentPosition === rook) {
+    }
+    
+    if (moveType === 'enPassant') {
+        const findEnemy = {
+            white: minusOne,
+            black: plusOne
+        }
+        const enemyX = stringToCoords(targetPosition)[0];
+        const enemyY = findEnemy[currentPlayer](stringToCoords(targetPosition)[1]);
+        enemyPosition = coordsToString([enemyX, enemyY]);
+        saveEnemyPiece = board[enemyPosition];
+        board[enemyPosition] = false;
+    }
+    
+    if (isKingSafe()) {
+        targetPositionEl.textContent = moveOptions[moveType].display;
+        targetPositionEl.addEventListener('click', () => {
+          saveGameBtn.classList.remove('game-saved');
+          saveGameBtn.classList.add('save-game-btn');
+          saveGameBtn.textContent = 'SAVE GAME';
+          board[currentPosition] = false;
+          board[targetPosition] = saveCurrentPiece;
+          if (moveType === 'enPassant') board[enemyPosition] = false;
+          if (saveCurrentPiece.piece === 'king') {
+            for (let rook in castling[currentPlayer]) {
               castling[currentPlayer][rook].isActive = false;
             }
           }
-        }
-        if (isAttack) {
-          if (saveTargetPiece.color === 'white') {
-            whiteCaptured.push(saveTargetPiece);
-          } else {
-            blackCaptured.push(saveTargetPiece);
+          if (saveCurrentPiece.piece === 'rook') {
+            for (let rook in castling[currentPlayer]) {
+              if (currentPosition === rook) {
+                castling[currentPlayer][rook].isActive = false;
+              }
+            }
           }
-        }
-        pastMoves.push([currentPosition, targetPosition]);
-        isAttack ? takePieceSound() : movePieceSound();
-        changePlayer();
-        refreshDisplay();
-        checkDefense = [];
-        check = false;
-        checkDisplay.textContent = '';
-        checkChecker();
-      })
+          if (moveType === 'attack') {
+              capturedPieces[saveTargetPiece.color].push(saveTargetPiece);
+          }
+          if (moveType === 'enPassant') {
+            capturedPieces[saveEnemyPiece.color].push(saveEnemyPiece);
+          }
+          pastMoves.push([currentPosition, targetPosition]);
+          moveOptions[moveType].sound();
+          changePlayer();
+          refreshDisplay();
+          checkDefense = [];
+          check = false;
+          checkDisplay.textContent = '';
+          checkChecker();
+        })
+    }  
     board[currentPosition] = saveCurrentPiece;
     board[targetPosition] = saveTargetPiece;
-    } else {
-      board[currentPosition] = saveCurrentPiece;
-      board[targetPosition] = saveTargetPiece;
-    }
-}
-
-function enPassantButton(currentPosition, targetPosition) {
-  const targetPositionEl = document.getElementById(targetPosition);
-  const findEnemy = {
-    white: minusOne,
-    black: plusOne
-  }
-  const enemyX = stringToCoords(targetPosition)[0];
-  const enemyY = findEnemy[currentPlayer](stringToCoords(targetPosition)[1]);
-  const enemyPosition = coordsToString([enemyX, enemyY]);
-  const saveCurrentPiece = board[currentPosition];
-  const saveEnemyPiece = board[enemyPosition];
-  board[currentPosition] = false;
-  board[targetPosition] = saveCurrentPiece;
-  board[enemyPosition] = false;
-  if (isKingSafe()) {
-    targetPositionEl.textContent = 'x';
-    targetPositionEl.addEventListener('click', () => {
-      takePieceSound();
-      board[currentPosition] = false;
-      board[targetPosition] = saveCurrentPiece;
-      board[enemyPosition] = false;
-      if (currentPlayer === 'white') {
-        blackCaptured.push(saveEnemyPiece);
-      } else {
-        whiteCaptured.push(saveEnemyPiece);
-      }
-      changePlayer();
-      refreshDisplay();
-    })
-  }
-  board[currentPosition] = saveCurrentPiece;
-  board[targetPosition] = false;
-  board[enemyPosition] = saveEnemyPiece;
+    if (moveType === 'enPassant') board[enemyPosition] = saveEnemyPiece;
 }
 
 function castlingButton(currentPosition, targetPosition) {
@@ -740,31 +734,18 @@ function performIntersection(arr1, arr2) {
 
 }
 
-
-
-function displayBlackCaptured() {
-    blackCapturedContainer.textContent = '';
-        if (blackCaptured !== null) {
-            for (let piece of blackCaptured) {
-                const renderedBlack = renderCapturedBlack(piece);
-                blackCapturedContainer.append(renderedBlack);
-            }
-        }
-        
-    }
-    
-
-
-function displayWhiteCaptured() {
-    whiteCapturedContainer.textContent = '';
-        if (whiteCaptured !== null) {
-            for (let piece of whiteCaptured) {
-                const renderedWhite = renderCapturedwhite(piece);
-                whiteCapturedContainer.append(renderedWhite);
-            }
-        }
-        
-    }
+function displayCapturedPieces() {
+  whiteCapturedContainer.textContent = '';
+  blackCapturedContainer.textContent = '';
+  for (let piece of capturedPieces.white) {
+    const renderedPiece = renderPiece(piece);
+    whiteCapturedContainer.append(renderedPiece);
+  }
+  for (let piece of capturedPieces.black) {
+    const renderedPiece = renderPiece(piece);
+    blackCapturedContainer.append(renderedPiece);
+  }
+}
     
 
 
@@ -776,7 +757,7 @@ function displayWhiteCaptured() {
 
 
 saveGameBtn.addEventListener('click', async () => {
-    const response = await saveGame(id, board, blackCaptured, whiteCaptured);
+    const response = await saveGame(id, board, capturedPieces.black, capturedPieces.white);
     saveGameBtn.textContent = 'GAME SAVED';
     saveGameBtn.classList.remove('save-game-btn');
     saveGameBtn.classList.add('game-saved');
