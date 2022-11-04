@@ -10,6 +10,12 @@ const music = document.getElementById('music');
 const checkDisplay = document.getElementById('check');
 const signOutLink = document.getElementById('sign-out-link');
 
+// const state = {
+//   captured: {
+//     white: [],
+//     black: []
+//   }
+// }
 let whiteCaptured = [];
 let blackCaptured = [];
 let check = false;
@@ -187,10 +193,10 @@ function renderPlayable(position) {
               }
               for (let move of moves) {
                   if (move.condition === 'empty') {
-                      moveButton(position, move.space);
+                      basicMoveButton(position, move.space, false);
                   }
                   if (move.condition === 'enemy') {
-                      attackButton(position, move.space);
+                      basicMoveButton(position, move.space, true);
                   }
                   if (move.condition === 'en passant') {
                     enPassantButton(position, move.space)
@@ -204,14 +210,15 @@ function renderPlayable(position) {
     }  
 }
 
-function moveButton(currentPosition, targetPosition) {
+function basicMoveButton(currentPosition, targetPosition, isAttack) {
     const targetPositionEl = document.getElementById(targetPosition);
     const saveCurrentPiece = board[currentPosition];
     const saveTargetPiece = board[targetPosition];
     board[currentPosition] = false;
     board[targetPosition] = saveCurrentPiece;
     if (isKingSafe()) {
-      targetPositionEl.textContent = 'o';
+      isAttack ? targetPositionEl.textContent = `x${saveTargetPiece.image}`
+        : targetPositionEl.textContent = 'o';
       targetPositionEl.addEventListener('click', () => {
         saveGameBtn.classList.remove('game-saved');
         saveGameBtn.classList.add('save-game-btn');
@@ -230,14 +237,21 @@ function moveButton(currentPosition, targetPosition) {
             }
           }
         }
-        movePieceSound();
+        if (isAttack) {
+          if (saveTargetPiece.color === 'white') {
+            whiteCaptured.push(saveTargetPiece);
+          } else {
+            blackCaptured.push(saveTargetPiece);
+          }
+        }
+        pastMoves.push([currentPosition, targetPosition]);
+        isAttack ? takePieceSound() : movePieceSound();
         changePlayer();
         refreshDisplay();
         checkDefense = [];
         check = false;
         checkDisplay.textContent = '';
         checkChecker();
-        pastMoves.push([currentPosition, targetPosition]);
       })
     board[currentPosition] = saveCurrentPiece;
     board[targetPosition] = saveTargetPiece;
@@ -245,53 +259,6 @@ function moveButton(currentPosition, targetPosition) {
       board[currentPosition] = saveCurrentPiece;
       board[targetPosition] = saveTargetPiece;
     }
-}
-
-function attackButton(currentPosition, targetPosition) {
-  const targetPositionEl = document.getElementById(targetPosition);
-    const saveCurrentPiece = board[currentPosition];
-    const saveTargetPiece = board[targetPosition];
-    board[currentPosition] = false;
-    board[targetPosition] = saveCurrentPiece;
-    if (isKingSafe()) {
-      targetPositionEl.textContent = `x${saveTargetPiece.image}`;
-      targetPositionEl.addEventListener('click', () => {
-        saveGameBtn.classList.remove('game-saved');
-        saveGameBtn.classList.add('save-game-btn');
-        saveGameBtn.textContent = 'SAVE GAME';
-        board[currentPosition] = false;
-        board[targetPosition] = saveCurrentPiece;
-        if (saveCurrentPiece.piece === 'king') {
-          for (let rook in castling[currentPlayer]) {
-            castling[currentPlayer][rook].isActive = false;
-          }
-        }
-        if (saveCurrentPiece.piece === 'rook') {
-          for (let rook in castling[currentPlayer]) {
-            if (currentPosition === rook) {
-              castling[currentPlayer][rook].isActive = false;
-            }
-          }
-        }
-        takePieceSound();   
-        if (saveTargetPiece.color === 'white') {
-            whiteCaptured.push(saveTargetPiece);
-        } else {
-            blackCaptured.push(saveTargetPiece);
-        }
-        pastMoves.push([currentPosition, targetPosition]); 
-        changePlayer();
-        refreshDisplay();
-        checkDefense = [];
-        check = false;
-        checkChecker();
-      })
-    board[currentPosition] = saveCurrentPiece;
-    board[targetPosition] = saveTargetPiece;  
-    } else {
-            board[currentPosition] = saveCurrentPiece;
-            board[targetPosition] = saveTargetPiece;
-        }
 }
 
 function enPassantButton(currentPosition, targetPosition) {
@@ -379,6 +346,9 @@ function castlingButton(currentPosition, targetPosition) {
     
 function pawn(position) {
     let moves = [];
+    const coords = stringToCoords(position);
+    let x = coords[0];
+    let y = coords[1];
     let pawnSpecs = {
       white: {
         moveDirection: plusOne,
@@ -391,9 +361,6 @@ function pawn(position) {
         enPassantRank: 4
       }
     }
-    const coords = stringToCoords(position);
-    let x = coords[0];
-    let y = coords[1];
     function doubleMove(number) {
       return pawnSpecs[currentPlayer].moveDirection(pawnSpecs[currentPlayer].moveDirection(number));    
     } 
