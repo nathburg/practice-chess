@@ -12,10 +12,6 @@ const signOutLink = document.getElementById('sign-out-link');
 
 let whiteCaptured = [];
 let blackCaptured = [];
-let whiteKingSideCastling = true;
-let whiteQueenSideCastling = true;
-let blackKingSideCastling = true;
-let blackQueenSideCastling = true;
 let check = false;
 let isGameOn = true;
 let checkDefense = [];
@@ -334,24 +330,6 @@ function enPassantButton(currentPosition, targetPosition) {
 }
 
 function castlingButton(currentPosition, targetPosition) {
-  const castlingOptions = {
-    a1: {
-      rook: 'c1',
-      king: 'b1'
-    },
-    h1: {
-      rook: 'f1',
-      king: 'g1'
-    },
-    a8: {
-      rook: 'c8',
-      king: 'b8' 
-    },
-    h8: {
-      rook: 'f8',
-      king: 'g8'
-    }
-  }
   const saveKingPosition = findKing();
   console.log(saveKingPosition);
   const rookSpot = castlingOptions[targetPosition].rook;
@@ -360,16 +338,22 @@ function castlingButton(currentPosition, targetPosition) {
   board[targetPosition] = false;
   board[rookSpot] = rookPiece[currentPlayer];
   board[kingSpot] = kingPiece[currentPlayer];
-  if (isKingSafe()) {
+  const castlingSpaces = castling[currentPlayer][targetPosition].spacesBetween;
+  const castlingSpacesArr = castlingSpaces.map(position => position.space);
+  const areSpacesSafe = castlingSpacesArr.reduce(
+    (prev, current) => isSpaceSafe(current) && prev,
+    true
+  );
+  if (!check && areSpacesSafe) {
     const kingSpotEl = document.getElementById(kingSpot);
     kingSpotEl.textContent = 'o';
     kingSpotEl.addEventListener('click', () => {
-      // saveGameBtn.classList.remove('game-saved');
-      // saveGameBtn.classList.add('save-game-btn');
-      // saveGameBtn.textContent = 'SAVE GAME';
-      // for (let rook in castling[currentPlayer]) {
-      //   castling[currentPlayer][rook].isActive = false;
-      // }
+      saveGameBtn.classList.remove('game-saved');
+      saveGameBtn.classList.add('save-game-btn');
+      saveGameBtn.textContent = 'SAVE GAME';
+      for (let rook in castling[currentPlayer]) {
+        castling[currentPlayer][rook].isActive = false;
+      }
       board[saveKingPosition] = false;
       board[targetPosition] = false;
       board[rookSpot] = rookPiece[currentPlayer];
@@ -379,7 +363,7 @@ function castlingButton(currentPosition, targetPosition) {
       changePlayer();
       refreshDisplay();
       checkChecker();
-      // pastMoves.push([currentPosition, targetPosition]); //this is weird, but still works
+      pastMoves.push([currentPosition, targetPosition]); //this is weird, but still works
     })
   board[saveKingPosition] = kingPiece[currentPlayer];
   board[targetPosition] = rookPiece[currentPlayer];
