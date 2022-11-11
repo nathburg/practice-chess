@@ -6,11 +6,10 @@ import {
 	inRange,
 	signChecker,
 } from './math-stuff.js';
-
-const saveGameBtn = document.getElementById('save-game-btn');
-
 import { renderPiece } from './render-utils.js';
 
+//some unimportant stuff for supabase and other things
+const saveGameBtn = document.getElementById('save-game-btn');
 const blackCapturedContainer = document.querySelector('.black-captured');
 const whiteCapturedContainer = document.querySelector('.white-captured');
 const music = document.getElementById('music');
@@ -18,6 +17,7 @@ const checkDisplay = document.getElementById('check');
 const signOutLink = document.getElementById('sign-out-link');
 music.volume = 0.12;
 
+//initial game state
 let isGameOn = true;
 let currentPlayer = 'white';
 const board = initialBoard;
@@ -28,6 +28,8 @@ const capturedPieces = {
 	white: [],
 	black: [],
 };
+const pastMoves = [];
+
 const pieceStringToFunction = {
 	pawn: pawn,
 	rook: rook,
@@ -36,9 +38,11 @@ const pieceStringToFunction = {
 	queen: queen,
 	king: king,
 };
-const pastMoves = [];
 
+//starts things off
 refreshDisplay();
+
+/////// the following are for properly displaying board state and user functionality ///////
 
 function refreshDisplay() {
 	if (isGameOn) {
@@ -253,6 +257,8 @@ function setCastlingButton(currentPosition, targetPosition) {
 	board[rookSpot] = false;
 	board[kingSpot] = false;
 }
+
+/////// game piece functions that return the piece's possible moves based on its position and the game state ///////
 
 function bishop(position) {
 	let moves = [];
@@ -493,6 +499,8 @@ function continueMove(position, deltaXFunction, deltaYFunction) {
 	return newMoves;
 }
 
+/////// functions for check conditions and ending game ///////
+
 function checkChecker() {
 	if (!isKingSafe()) {
 		check = true;
@@ -555,9 +563,8 @@ function threatsToSpace(space) {
 							space: position,
 							condition: 'enemy',
 						});
-						// the following is give this function generality outside of just check
-						// I'd like to use it for castling to see if the spaces between king and
-						// rook are threatened by anything, including a king
+						// the following makes it so the enemy king can threaten spaces between
+						// the other king and rook and stop them from castling
 					} else if (board[position].piece === 'king') {
 						threatMoves.push({
 							space: position,
@@ -603,6 +610,8 @@ function findKing() {
 function isSpaceSafe(position) {
 	return threatsToSpace(position).length === 0;
 }
+
+/////// minor supporting functions ///////
 
 function stringToCoords(string) {
 	const letterArray = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
