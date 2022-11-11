@@ -342,7 +342,10 @@ function king(position) {
 		moves.push(inspectCoords(x - 1, y));
 	}
 	for (let rookPosition in castling[currentPlayer]) {
-		if (castling[currentPlayer][rookPosition].isActive) {
+		if (
+			castling[currentPlayer][rookPosition].isActive &&
+			board[rookPosition].piece === 'rook'
+		) {
 			const castlingSpaces = performIntersection(
 				rook(rookPosition),
 				castling[currentPlayer][rookPosition].spacesBetween
@@ -451,12 +454,8 @@ function pawn(position) {
 			if (
 				y === pawnSpecs[currentPlayer].startRank &&
 				inspectSpace(coordsToString([x, doubleMove(y)])) &&
-				inspectSpace(
-					coordsToString([
-						x,
-						inspectSpace(coordsToString([x, doubleMove(y)])),
-					])
-				).condition === 'empty'
+				inspectSpace(coordsToString([x, doubleMove(y)])).condition ===
+					'empty'
 			) {
 				moves.push(inspectSpace(coordsToString([x, doubleMove(y)])));
 			}
