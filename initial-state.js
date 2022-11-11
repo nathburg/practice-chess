@@ -193,3 +193,39 @@ export let initialBoard = {
       image: '♜'
       } 
 }
+
+export let initialCastling = {
+  white: {
+    a1: {
+      isActive: true,
+      spacesBetween: [
+        {space: 'b1', condition: 'empty'},
+        {space: 'c1', condition: 'empty'},
+        {space: 'd1', condition: 'empty'}
+      ]
+    },
+    h1: {
+      isActive: true,
+      spacesBetween: [
+        {space: 'f1', condition: 'empty'},
+        {space: 'g1', condition: 'empty'}
+      ]
+    }
+  },
+  black: {
+    a8: {
+      isActive: true,
+      spacesBetween: [
+        {space: 'b8', condition: 'empty'}, 
+        {space: 'c8', condition: 'empty'}, 
+        {space: 'd8', condition: 'empty'}
+      ]
+    },
+    h8: {
+      isActive: true,
+      spacesBetween: [
+        {space: 'f8', condition: 'empty'}, 
+        {space: 'g8', condition: 'empty'}]
+    }
+  }
+}
