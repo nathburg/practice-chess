@@ -563,9 +563,8 @@ function threatsToSpace(space) {
 							space: position,
 							condition: 'enemy',
 						});
-						// the following is give this function generality outside of just check
-						// I'd like to use it for castling to see if the spaces between king and
-						// rook are threatened by anything, including a king
+						// the following makes it so the enemy king can threaten spaces between
+						// the other king and rook and stop them from castling
 					} else if (board[position].piece === 'king') {
 						threatMoves.push({
 							space: position,
