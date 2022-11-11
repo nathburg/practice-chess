@@ -29,24 +29,11 @@ export function renderPlayerNames(game, user) {
 
 }
 
-export function renderCapturedBlack(piece) {
-    
+export function renderPiece(piece) {
     const pieceEl = document.createElement('p');
-
     pieceEl.textContent = piece.image;
-
-    
-
     return pieceEl;
 }
 
-export function renderCapturedwhite(piece) {
-    
-    const pieceEl = document.createElement('p');
-
-    pieceEl.textContent = piece.image;
-
-    return pieceEl;
-}
 
 
