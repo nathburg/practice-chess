@@ -70,8 +70,10 @@ function renderPlayable(position) {
 		const positionEl = document.getElementById(position);
 		positionEl.addEventListener('click', () => {
 			refreshDisplay();
+			// next line gives the moves that whatever piece is in this position can make here
 			let moves = pieceStringToFunction[board[position].piece](position);
 			if (check) {
+				// this returns only moves that will get your king out of check
 				moves = performIntersection(moves, checkDefense);
 			}
 			for (let move of moves) {
@@ -97,8 +99,6 @@ function setMoveButton(currentPosition, targetPosition, moveType) {
 	const saveCurrentPiece = board[currentPosition];
 	const saveTargetPiece = board[targetPosition];
 	let saveEnemyPiece;
-	board[currentPosition] = false;
-	board[targetPosition] = saveCurrentPiece;
 	let enemyPosition;
 
 	const moveOptions = {
@@ -129,7 +129,10 @@ function setMoveButton(currentPosition, targetPosition, moveType) {
 		saveEnemyPiece = board[enemyPosition];
 		board[enemyPosition] = false;
 	}
-
+	// change board state and see if it puts your king in check
+	// if king is safe, set button that will enact the move
+	board[currentPosition] = false;
+	board[targetPosition] = saveCurrentPiece;
 	if (isKingSafe()) {
 		targetPositionEl.textContent = moveOptions[moveType].display;
 		targetPositionEl.addEventListener('click', () => {
@@ -167,6 +170,7 @@ function setMoveButton(currentPosition, targetPosition, moveType) {
 			checkChecker();
 		});
 	}
+	// board state is reset
 	board[currentPosition] = saveCurrentPiece;
 	board[targetPosition] = saveTargetPiece;
 	if (moveType === 'enPassant') board[enemyPosition] = saveEnemyPiece;
@@ -217,13 +221,7 @@ function setCastlingButton(currentPosition, targetPosition) {
 			image: '♜',
 		},
 	};
-	const saveKingPosition = findKing();
-	const rookSpot = castlingOptions[targetPosition].rook;
-	const kingSpot = castlingOptions[targetPosition].king;
-	board[saveKingPosition] = false;
-	board[targetPosition] = false;
-	board[rookSpot] = rookPiece[currentPlayer];
-	board[kingSpot] = kingPiece[currentPlayer];
+
 	const castlingSpaces =
 		castling[currentPlayer][targetPosition].spacesBetween;
 	const castlingSpacesArr = castlingSpaces.map((position) => position.space);
@@ -232,6 +230,8 @@ function setCastlingButton(currentPosition, targetPosition) {
 		true
 	);
 	if (!check && areSpacesSafe) {
+		const rookSpot = castlingOptions[targetPosition].rook;
+		const kingSpot = castlingOptions[targetPosition].king;
 		const kingSpotEl = document.getElementById(kingSpot);
 		kingSpotEl.textContent = 'o';
 		kingSpotEl.addEventListener('click', () => {
@@ -241,7 +241,7 @@ function setCastlingButton(currentPosition, targetPosition) {
 			for (let rook in castling[currentPlayer]) {
 				castling[currentPlayer][rook].isActive = false;
 			}
-			board[saveKingPosition] = false;
+			board[currentPosition] = false;
 			board[targetPosition] = false;
 			board[rookSpot] = rookPiece[currentPlayer];
 			board[kingSpot] = kingPiece[currentPlayer];
@@ -252,10 +252,6 @@ function setCastlingButton(currentPosition, targetPosition) {
 			pastMoves.push([currentPosition, targetPosition, 'castling']);
 		});
 	}
-	board[saveKingPosition] = kingPiece[currentPlayer];
-	board[targetPosition] = rookPiece[currentPlayer];
-	board[rookSpot] = false;
-	board[kingSpot] = false;
 }
 
 /////// game piece functions that return the piece's possible moves based on its position and the game state ///////
@@ -356,6 +352,7 @@ function king(position) {
 				rook(rookPosition),
 				castling[currentPlayer][rookPosition].spacesBetween
 			);
+			// this checks that all spaces between king and rook are empty
 			if (
 				JSON.stringify(castlingSpaces) ===
 				JSON.stringify(
@@ -391,7 +388,7 @@ function pawn(position) {
 			pawnSpecs[currentPlayer].moveDirection(number)
 		);
 	}
-
+	// en passant condition
 	if (y === pawnSpecs[currentPlayer].enPassantRank) {
 		const prevMove = pastMoves.slice(-1)[0];
 		const prevMovePiece = board[prevMove[1]].piece;
@@ -416,6 +413,7 @@ function pawn(position) {
 		}
 	}
 	if (inRange(pawnSpecs[currentPlayer].moveDirection(y))) {
+		// attack conditions
 		if (inRange(x - 1)) {
 			const test = coordsToString([
 				x - 1,
@@ -441,6 +439,7 @@ function pawn(position) {
 				moves.push(inspectSpace(test));
 			}
 		}
+		// move condition
 		if (
 			inspectSpace(
 				coordsToString([x, pawnSpecs[currentPlayer].moveDirection(y)])
@@ -457,6 +456,7 @@ function pawn(position) {
 					])
 				)
 			);
+			// double move condition
 			if (
 				y === pawnSpecs[currentPlayer].startRank &&
 				inspectSpace(coordsToString([x, doubleMove(y)])) &&
@@ -470,15 +470,35 @@ function pawn(position) {
 	return moves;
 }
 
+// tells if space is empty or has an enemy
+// returns nothing if space has an ally piece
+function inspectSpace(space) {
+	if (!board[space]) {
+		return { space: space, condition: 'empty' };
+	} else if (board[space].color !== currentPlayer) {
+		return { space: space, condition: 'enemy' };
+	}
+}
+
+function inspectCoords(x, y) {
+	if (inRange(x) && inRange(y)) {
+		const test = coordsToString([x, y]);
+		if (inspectSpace(test)) {
+			return inspectSpace(test);
+		}
+	}
+}
+
+// generates moves in a straight line until it hits the edge of the board or another piece
 function continueMove(position, deltaXFunction, deltaYFunction) {
 	let newMoves = [];
 	const coords = stringToCoords(position);
 	let x = coords[0];
 	let y = coords[1];
-	let open = true;
+	let isOpen = true;
 	let testX = deltaXFunction(x);
 	let testY = deltaYFunction(y);
-	while (open === true) {
+	while (isOpen === true) {
 		if (inRange(testX) && inRange(testY)) {
 			const test = coordsToString([testX, testY]);
 			if (inspectSpace(test)) {
@@ -487,13 +507,13 @@ function continueMove(position, deltaXFunction, deltaYFunction) {
 					testX = deltaXFunction(testX);
 					testY = deltaYFunction(testY);
 				} else {
-					open = false;
+					isOpen = false;
 				}
 			} else {
-				open = false;
+				isOpen = false;
 			}
 		} else {
-			open = false;
+			isOpen = false;
 		}
 	}
 	return newMoves;
@@ -514,19 +534,21 @@ function checkChecker() {
 }
 
 function setCheckDefense() {
-	let kingPosition = findKing(currentPlayer);
+	let kingPosition = findKing();
 	const threatMoves = threatsToSpace(kingPosition);
 	for (let position in board) {
 		if (position === kingPosition) {
 			const kingMoves = king(position);
 			const saveKing = board[position];
+			// change state to simulate king move
 			board[position] = false;
 			for (let move of kingMoves) {
-				if (isSpaceSafe(move.space)) {
+				if (isSpaceSafe(move.space) && move.condition != 'castling') {
 					checkDefense.push(move);
 				}
-				board[position] = saveKing;
 			}
+			// reset state
+			board[position] = saveKing;
 		} else if (board[position].color === currentPlayer) {
 			const potentialDefenseMoves =
 				pieceStringToFunction[board[position].piece](position);
@@ -540,9 +562,21 @@ function setCheckDefense() {
 	}
 }
 
+// threatsToSpace is the trickiest function. It calls changePlayer four times to strategically
+// change 'perspective' of what is an enemy. The goal is to see which enemy pieces threaten
+// a space, meaning, if currentPlayer were the enemy's color, do any enemy pieces make
+// a move on the space that inspectSpace would give the condition as 'enemy'? Then, if an enemy
+// piece does threaten the space, that enemy's position is stored in threat moves as an enemy.
+// This means threatMoves are actually stored from the 'perspective' of the defense (so that
+// setCheckDefense can generate moves from the defense perspective and simply intersect those
+// moves with threatMoves to see if there is any possible defense). For pawn and knight this is
+// done manually, but for bishop, rook, and queen which invoke continueMove, to use continueMove
+// correctly changePlayer is called again to change currentPlayer to the defender's color.
+
 function threatsToSpace(space) {
 	let threatMoves = [];
 	const savePiece = board[space];
+	// set a dummy piece at the space so even an empty space can be perceived as threatened
 	board[space] = {
 		color: currentPlayer,
 	};
@@ -551,26 +585,36 @@ function threatsToSpace(space) {
 	changePlayer();
 	for (let position in board) {
 		if (board[position].color === currentPlayer) {
+			// all the moves this enemy piece can make
 			const checkArray =
 				pieceStringToFunction[board[position].piece](position);
 			for (let move of checkArray) {
+				// if this move threatens the space
 				if (move.space === space) {
 					if (
 						board[position].piece === 'pawn' ||
 						board[position].piece === 'knight'
 					) {
+						// then store as an enemy the position of the piece making the threat
 						threatMoves.push({
 							space: position,
 							condition: 'enemy',
 						});
 						// the following makes it so the enemy king can threaten spaces between
-						// the other king and rook and stop them from castling
+						// the other king and rook and stop them from castling, without being stored
+						// as simply an 'enemy' that can be taken out by a defense move
 					} else if (board[position].piece === 'king') {
 						threatMoves.push({
 							space: position,
 							condition: 'king',
 						});
 					} else {
+						// If a bishop, rook, or queen threatens the space from a distance, the threat
+						// can be defended by taking the piece or blocking its path. We use something
+						// like echolocation, using the inversion of the attacking continueMove from the
+						// threatened space and from the defense perspective, which generates all
+						// intermediate spaces for blocking as well at the attacking piece's position
+						// stored as an 'enemy'.
 						const threatX = stringToCoords(position)[0];
 						const threatY = stringToCoords(position)[1];
 						const deltaXFunction = signChecker(threatX - spaceX);
@@ -592,14 +636,14 @@ function threatsToSpace(space) {
 }
 
 function isKingSafe() {
-	const theKing = findKing(currentPlayer);
+	const theKing = findKing();
 	return threatsToSpace(theKing).length === 0;
 }
 
 function findKing() {
 	for (let position in board) {
 		if (
-			pieceStringToFunction[board[position].piece] === king &&
+			board[position].piece === 'king' &&
 			board[position].color === currentPlayer
 		) {
 			return position;
@@ -629,23 +673,6 @@ function coordsToString(coords) {
 	return coords.join('');
 }
 
-function inspectSpace(space) {
-	if (!board[space]) {
-		return { space: space, condition: 'empty' };
-	} else if (board[space].color !== currentPlayer) {
-		return { space: space, condition: 'enemy' };
-	}
-}
-
-function inspectCoords(x, y) {
-	if (inRange(x) && inRange(y)) {
-		const test = coordsToString([x, y]);
-		if (inspectSpace(test)) {
-			return inspectSpace(test);
-		}
-	}
-}
-
 function changePlayer() {
 	if (currentPlayer === 'white') {
 		currentPlayer = 'black';
@@ -656,19 +683,15 @@ function changePlayer() {
 
 function performIntersection(arr1, arr2) {
 	const set = new Set();
-
 	for (const move of arr1) {
 		set.add(move.space + move.condition);
 	}
-
 	const results = [];
-
 	for (const move of arr2) {
 		if (set.has(move.space + move.condition)) {
 			results.push(move);
 		}
 	}
-
 	return results;
 }
 
