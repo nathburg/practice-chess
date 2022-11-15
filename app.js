@@ -489,7 +489,7 @@ function inspectCoords(x, y) {
 	}
 }
 
-// generates moves in straight lines until it hits the edge of the board or another piece
+// generates moves in a straight line until it hits the edge of the board or another piece
 function continueMove(position, deltaXFunction, deltaYFunction) {
 	let newMoves = [];
 	const coords = stringToCoords(position);
@@ -534,7 +534,7 @@ function checkChecker() {
 }
 
 function setCheckDefense() {
-	let kingPosition = findKing(currentPlayer);
+	let kingPosition = findKing();
 	const threatMoves = threatsToSpace(kingPosition);
 	for (let position in board) {
 		if (position === kingPosition) {
@@ -562,9 +562,21 @@ function setCheckDefense() {
 	}
 }
 
+// threatsToSpace is the trickiest function. It calls changePlayer four times to strategically
+// change 'perspective' of what is an enemy. The goal is to see which enemy pieces threaten
+// a space, meaning, if currentPlayer were the enemy's color, do any enemy pieces make
+// a move on the space that inspectSpace would give the condition as 'enemy'? Then, if an enemy
+// piece does threaten the space, that enemy's position is stored in threat moves as an enemy.
+// This means threatMoves are actually stored from the 'perspective' of the defense (so that
+// setCheckDefense can generate moves from the defense perspective and simply intersect those
+// moves with threatMoves to see if there is any possible defense). For pawn and knight this is
+// done manually, but for bishop, rook, and queen which invoke continueMove, to use continueMove
+// correctly changePlayer is called again to change currentPlayer to the defender's color.
+
 function threatsToSpace(space) {
 	let threatMoves = [];
 	const savePiece = board[space];
+	// set a dummy piece at the space so even an empty space can be perceived as threatened
 	board[space] = {
 		color: currentPlayer,
 	};
@@ -573,26 +585,36 @@ function threatsToSpace(space) {
 	changePlayer();
 	for (let position in board) {
 		if (board[position].color === currentPlayer) {
+			// all the moves this enemy piece can make
 			const checkArray =
 				pieceStringToFunction[board[position].piece](position);
 			for (let move of checkArray) {
+				// if this move threatens the space
 				if (move.space === space) {
 					if (
 						board[position].piece === 'pawn' ||
 						board[position].piece === 'knight'
 					) {
+						// then store as an enemy the position of the piece making the threat
 						threatMoves.push({
 							space: position,
 							condition: 'enemy',
 						});
 						// the following makes it so the enemy king can threaten spaces between
-						// the other king and rook and stop them from castling
+						// the other king and rook and stop them from castling, without being stored
+						// as simply an 'enemy' that can be taken out by a defense move
 					} else if (board[position].piece === 'king') {
 						threatMoves.push({
 							space: position,
 							condition: 'king',
 						});
 					} else {
+						// If a bishop, rook, or queen threatens the space from a distance, the threat
+						// can be defended by taking the piece or blocking its path. We use something
+						// like echolocation, using the inversion of the attacking continueMove from the
+						// threatened space and from the defense perspective, which generates all
+						// intermediate spaces for blocking as well at the attacking piece's position
+						// stored as an 'enemy'.
 						const threatX = stringToCoords(position)[0];
 						const threatY = stringToCoords(position)[1];
 						const deltaXFunction = signChecker(threatX - spaceX);
@@ -614,7 +636,7 @@ function threatsToSpace(space) {
 }
 
 function isKingSafe() {
-	const theKing = findKing(currentPlayer);
+	const theKing = findKing();
 	return threatsToSpace(theKing).length === 0;
 }
 
