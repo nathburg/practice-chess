@@ -683,19 +683,15 @@ function changePlayer() {
 
 function performIntersection(arr1, arr2) {
 	const set = new Set();
-
 	for (const move of arr1) {
 		set.add(move.space + move.condition);
 	}
-
 	const results = [];
-
 	for (const move of arr2) {
 		if (set.has(move.space + move.condition)) {
 			results.push(move);
 		}
 	}
-
 	return results;
 }
 
