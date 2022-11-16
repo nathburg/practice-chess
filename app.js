@@ -258,19 +258,29 @@ function setCastlingButton(currentPosition, targetPosition) {
 
 function bishop(position) {
 	let moves = [];
-	moves = moves.concat(continueMove(position, minusOne, plusOne));
-	moves = moves.concat(continueMove(position, plusOne, plusOne));
-	moves = moves.concat(continueMove(position, minusOne, minusOne));
-	moves = moves.concat(continueMove(position, plusOne, minusOne));
+	const moveArr = [
+		[minusOne, plusOne],
+		[plusOne, plusOne],
+		[minusOne, minusOne],
+		[plusOne, minusOne],
+	];
+	for (const move of moveArr) {
+		moves = moves.concat(continueMove(position, move[0], move[1]));
+	}
 	return moves;
 }
 
 function rook(position) {
 	let moves = [];
-	moves = moves.concat(continueMove(position, constantFunction, plusOne));
-	moves = moves.concat(continueMove(position, constantFunction, minusOne));
-	moves = moves.concat(continueMove(position, plusOne, constantFunction));
-	moves = moves.concat(continueMove(position, minusOne, constantFunction));
+	const moveArr = [
+		[constantFunction, plusOne],
+		[constantFunction, minusOne],
+		[plusOne, constantFunction],
+		[minusOne, constantFunction],
+	];
+	for (const move of moveArr) {
+		moves = moves.concat(continueMove(position, move[0], move[1]));
+	}
 	return moves;
 }
 
@@ -284,65 +294,47 @@ function knight(position) {
 	const coords = stringToCoords(position);
 	let x = coords[0];
 	let y = coords[1];
+	const moveArr = [
+		[x + 1, y + 2],
+		[x + 1, y - 2],
+		[x + 2, y + 1],
+		[x + 2, y - 1],
+		[x - 1, y + 2],
+		[x - 1, y - 2],
+		[x - 2, y + 1],
+		[x - 2, y - 1],
+	];
 
-	if (inspectCoords(x + 1, y + 2)) {
-		moves.push(inspectCoords(x + 1, y + 2));
-	}
-	if (inspectCoords(x + 1, y - 2)) {
-		moves.push(inspectCoords(x + 1, y - 2));
-	}
-	if (inspectCoords(x + 2, y + 1)) {
-		moves.push(inspectCoords(x + 2, y + 1));
-	}
-	if (inspectCoords(x + 2, y - 1)) {
-		moves.push(inspectCoords(x + 2, y - 1));
-	}
-	if (inspectCoords(x - 1, y + 2)) {
-		moves.push(inspectCoords(x - 1, y + 2));
-	}
-	if (inspectCoords(x - 1, y - 2)) {
-		moves.push(inspectCoords(x - 1, y - 2));
-	}
-	if (inspectCoords(x - 2, y + 1)) {
-		moves.push(inspectCoords(x - 2, y + 1));
-	}
-	if (inspectCoords(x - 2, y - 1)) {
-		moves.push(inspectCoords(x - 2, y - 1));
+	for (const move of moveArr) {
+		if (inspectCoords(move[0], move[1])) {
+			moves.push(inspectCoords(move[0], move[1]));
+		}
 	}
 	return moves;
 }
 
 function king(position) {
 	let moves = [];
-
 	const coords = stringToCoords(position);
 	let x = coords[0];
 	let y = coords[1];
+	const moveArr = [
+		[x, y + 1],
+		[x, y - 1],
+		[x + 1, y + 1],
+		[x + 1, y - 1],
+		[x + 1, y],
+		[x - 1, y + 1],
+		[x - 1, y - 1],
+		[x - 1, y],
+	];
 
-	if (inspectCoords(x, y + 1)) {
-		moves.push(inspectCoords(x, y + 1));
+	for (const move of moveArr) {
+		if (inspectCoords(x, y + 1)) {
+			moves.push(inspectCoords(move[0], move[1]));
+		}
 	}
-	if (inspectCoords(x, y - 1)) {
-		moves.push(inspectCoords(x, y - 1));
-	}
-	if (inspectCoords(x + 1, y + 1)) {
-		moves.push(inspectCoords(x + 1, y + 1));
-	}
-	if (inspectCoords(x + 1, y - 1)) {
-		moves.push(inspectCoords(x + 1, y - 1));
-	}
-	if (inspectCoords(x + 1, y)) {
-		moves.push(inspectCoords(x + 1, y));
-	}
-	if (inspectCoords(x - 1, y + 1)) {
-		moves.push(inspectCoords(x - 1, y + 1));
-	}
-	if (inspectCoords(x - 1, y - 1)) {
-		moves.push(inspectCoords(x - 1, y - 1));
-	}
-	if (inspectCoords(x - 1, y)) {
-		moves.push(inspectCoords(x - 1, y));
-	}
+
 	for (let rookPosition in castling[currentPlayer]) {
 		if (
 			castling[currentPlayer][rookPosition].isActive &&
@@ -613,7 +605,7 @@ function threatsToSpace(space) {
 						// can be defended by taking the piece or blocking its path. We use something
 						// like echolocation, using the inversion of the attacking continueMove from the
 						// threatened space and from the defense perspective, which generates all
-						// intermediate spaces for blocking as well at the attacking piece's position
+						// intermediate spaces for blocking as well as the attacking piece's position
 						// stored as an 'enemy'.
 						const threatX = stringToCoords(position)[0];
 						const threatY = stringToCoords(position)[1];
