@@ -1,3 +1,4 @@
+import { getGameById, onSave, saveGame } from './fetch-utils.js';
 import { initialBoard, initialCastling } from './initial-state.js';
 import {
 	plusOne,
@@ -8,8 +9,22 @@ import {
 } from './math-stuff.js';
 import { renderPiece } from './render-utils.js';
 
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+const stateResp = await getGameById(id);
+
+onSave(id, (payload) => {
+	isGameOn = payload.new.game_state.isGameOn;
+	currentPlayer = payload.new.game_state.currentPlayer;
+	board = payload.new.game_state.board;
+	castling = payload.new.game_state.castling;
+	capturedPieces = payload.new.game_state.capturedPieces;
+	pastMoves = payload.new.game_state.pastMoves;
+	checkChecker();
+	refreshDisplay();
+});
+
 //some unimportant stuff for supabase and other things
-const saveGameBtn = document.getElementById('save-game-btn');
 const blackCapturedContainer = document.querySelector('.black-captured');
 const whiteCapturedContainer = document.querySelector('.white-captured');
 const music = document.getElementById('music');
@@ -18,17 +33,32 @@ const signOutLink = document.getElementById('sign-out-link');
 music.volume = 0.12;
 
 //initial game state
-let isGameOn = true;
-let currentPlayer = 'white';
-const board = initialBoard;
+let isGameOn = stateResp.game_state.isGameOn;
+let currentPlayer = stateResp.game_state.currentPlayer;
+let board = stateResp.game_state.board;
+let castling = stateResp.game_state.castling;
+let capturedPieces = stateResp.game_state.capturedPieces;
+let pastMoves = stateResp.game_state.pastMoves;
 let check = false;
 let checkDefense = [];
-const castling = initialCastling;
-const capturedPieces = {
-	white: [],
-	black: [],
+
+let state = {
+	isGameOn,
+	currentPlayer,
+	board,
+	castling,
+	capturedPieces,
+	pastMoves,
 };
-const pastMoves = [];
+
+function setState() {
+	state.isGameOn = isGameOn;
+	state.currentPlayer = currentPlayer;
+	state.board = board;
+	state.castling = castling;
+	state.capturedPieces = capturedPieces;
+	state.pastMoves = pastMoves;
+}
 
 const pieceStringToFunction = {
 	pawn: pawn,
@@ -135,10 +165,7 @@ function setMoveButton(currentPosition, targetPosition, moveType) {
 	board[targetPosition] = saveCurrentPiece;
 	if (isKingSafe()) {
 		targetPositionEl.textContent = moveOptions[moveType].display;
-		targetPositionEl.addEventListener('click', () => {
-			saveGameBtn.classList.remove('game-saved');
-			saveGameBtn.classList.add('save-game-btn');
-			saveGameBtn.textContent = 'SAVE GAME';
+		targetPositionEl.addEventListener('click', async () => {
 			board[currentPosition] = false;
 			board[targetPosition] = saveCurrentPiece;
 			if (moveType === 'enPassant') board[enemyPosition] = false;
@@ -163,6 +190,8 @@ function setMoveButton(currentPosition, targetPosition, moveType) {
 			pastMoves.push([currentPosition, targetPosition, moveType]);
 			moveOptions[moveType].sound();
 			changePlayer();
+			setState();
+			await saveGame(id, state);
 			refreshDisplay();
 			checkDefense = [];
 			check = false;
@@ -234,10 +263,7 @@ function setCastlingButton(currentPosition, targetPosition) {
 		const kingSpot = castlingOptions[targetPosition].king;
 		const kingSpotEl = document.getElementById(kingSpot);
 		kingSpotEl.textContent = 'o';
-		kingSpotEl.addEventListener('click', () => {
-			saveGameBtn.classList.remove('game-saved');
-			saveGameBtn.classList.add('save-game-btn');
-			saveGameBtn.textContent = 'SAVE GAME';
+		kingSpotEl.addEventListener('click', async () => {
 			for (let rook in castling[currentPlayer]) {
 				castling[currentPlayer][rook].isActive = false;
 			}
@@ -247,6 +273,8 @@ function setCastlingButton(currentPosition, targetPosition) {
 			board[kingSpot] = kingPiece[currentPlayer];
 			movePieceSound();
 			changePlayer();
+			setState();
+			await saveGame(id, state);
 			refreshDisplay();
 			checkChecker();
 			pastMoves.push([currentPosition, targetPosition, 'castling']);
@@ -330,7 +358,7 @@ function king(position) {
 	];
 
 	for (const move of moveArr) {
-		if (inspectCoords(x, y + 1)) {
+		if (inspectCoords(move[0], move[1])) {
 			moves.push(inspectCoords(move[0], move[1]));
 		}
 	}
@@ -690,7 +718,7 @@ function performIntersection(arr1, arr2) {
 function styleBoard() {
 	let isWhite = false;
 	let counter = 0;
-	for (const position in board) {
+	for (const position in initialBoard) {
 		const positionEl = document.getElementById(position);
 		positionEl.classList.add('square');
 		if (isWhite) {
@@ -717,18 +745,6 @@ function displayCapturedPieces() {
 		blackCapturedContainer.append(renderedPiece);
 	}
 }
-
-saveGameBtn.addEventListener('click', async () => {
-	const response = await saveGame(
-		id,
-		board,
-		capturedPieces.black,
-		capturedPieces.white
-	);
-	saveGameBtn.textContent = 'GAME SAVED';
-	saveGameBtn.classList.remove('save-game-btn');
-	saveGameBtn.classList.add('game-saved');
-});
 
 function movePieceSound() {
 	var audio = new Audio('./assets/chess-move.wav');
