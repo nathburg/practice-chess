@@ -1,3 +1,4 @@
+import { getGameById, onSave, saveGame } from './fetch-utils.js';
 import { initialBoard, initialCastling } from './initial-state.js';
 import {
 	plusOne,
@@ -8,8 +9,22 @@ import {
 } from './math-stuff.js';
 import { renderPiece } from './render-utils.js';
 
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
+const stateResp = await getGameById(id);
+
+onSave(id, (payload) => {
+	isGameOn = payload.new.game_state.isGameOn;
+	currentPlayer = payload.new.game_state.currentPlayer;
+	board = payload.new.game_state.board;
+	castling = payload.new.game_state.castling;
+	capturedPieces = payload.new.game_state.capturedPieces;
+	pastMoves = payload.new.game_state.pastMoves;
+	checkChecker();
+	refreshDisplay();
+});
+
 //some unimportant stuff for supabase and other things
-const saveGameBtn = document.getElementById('save-game-btn');
 const blackCapturedContainer = document.querySelector('.black-captured');
 const whiteCapturedContainer = document.querySelector('.white-captured');
 const music = document.getElementById('music');
@@ -18,17 +33,31 @@ const signOutLink = document.getElementById('sign-out-link');
 music.volume = 0.12;
 
 //initial game state
-let isGameOn = true;
-let currentPlayer = 'white';
-const board = initialBoard;
+let isGameOn = stateResp.game_state.isGameOn;
+let currentPlayer = stateResp.game_state.currentPlayer;
+let board = stateResp.game_state.board;
+let castling = stateResp.game_state.castling;
+let capturedPieces = stateResp.game_state.capturedPieces;
+let pastMoves = stateResp.game_state.pastMoves;
 let check = false;
 let checkDefense = [];
-const castling = initialCastling;
-const capturedPieces = {
-	white: [],
-	black: [],
+
+let state = {
+	currentPlayer,
+	board,
+	castling,
+	capturedPieces,
+	pastMoves,
 };
-const pastMoves = [];
+
+function setState() {
+	state.isGameOn = isGameOn;
+	state.currentPlayer = currentPlayer;
+	state.board = board;
+	state.castling = castling;
+	state.capturedPieces = capturedPieces;
+	state.pastMoves = pastMoves;
+}
 
 const pieceStringToFunction = {
 	pawn: pawn,
@@ -135,10 +164,7 @@ function setMoveButton(currentPosition, targetPosition, moveType) {
 	board[targetPosition] = saveCurrentPiece;
 	if (isKingSafe()) {
 		targetPositionEl.textContent = moveOptions[moveType].display;
-		targetPositionEl.addEventListener('click', () => {
-			saveGameBtn.classList.remove('game-saved');
-			saveGameBtn.classList.add('save-game-btn');
-			saveGameBtn.textContent = 'SAVE GAME';
+		targetPositionEl.addEventListener('click', async () => {
 			board[currentPosition] = false;
 			board[targetPosition] = saveCurrentPiece;
 			if (moveType === 'enPassant') board[enemyPosition] = false;
@@ -163,6 +189,8 @@ function setMoveButton(currentPosition, targetPosition, moveType) {
 			pastMoves.push([currentPosition, targetPosition, moveType]);
 			moveOptions[moveType].sound();
 			changePlayer();
+			setState();
+			await saveGame(id, state);
 			refreshDisplay();
 			checkDefense = [];
 			check = false;
@@ -234,10 +262,7 @@ function setCastlingButton(currentPosition, targetPosition) {
 		const kingSpot = castlingOptions[targetPosition].king;
 		const kingSpotEl = document.getElementById(kingSpot);
 		kingSpotEl.textContent = 'o';
-		kingSpotEl.addEventListener('click', () => {
-			saveGameBtn.classList.remove('game-saved');
-			saveGameBtn.classList.add('save-game-btn');
-			saveGameBtn.textContent = 'SAVE GAME';
+		kingSpotEl.addEventListener('click', async () => {
 			for (let rook in castling[currentPlayer]) {
 				castling[currentPlayer][rook].isActive = false;
 			}
@@ -247,6 +272,8 @@ function setCastlingButton(currentPosition, targetPosition) {
 			board[kingSpot] = kingPiece[currentPlayer];
 			movePieceSound();
 			changePlayer();
+			setState();
+			await saveGame(id, state);
 			refreshDisplay();
 			checkChecker();
 			pastMoves.push([currentPosition, targetPosition, 'castling']);
@@ -258,19 +285,29 @@ function setCastlingButton(currentPosition, targetPosition) {
 
 function bishop(position) {
 	let moves = [];
-	moves = moves.concat(continueMove(position, minusOne, plusOne));
-	moves = moves.concat(continueMove(position, plusOne, plusOne));
-	moves = moves.concat(continueMove(position, minusOne, minusOne));
-	moves = moves.concat(continueMove(position, plusOne, minusOne));
+	const moveArr = [
+		[minusOne, plusOne],
+		[plusOne, plusOne],
+		[minusOne, minusOne],
+		[plusOne, minusOne],
+	];
+	for (const move of moveArr) {
+		moves = moves.concat(continueMove(position, move[0], move[1]));
+	}
 	return moves;
 }
 
 function rook(position) {
 	let moves = [];
-	moves = moves.concat(continueMove(position, constantFunction, plusOne));
-	moves = moves.concat(continueMove(position, constantFunction, minusOne));
-	moves = moves.concat(continueMove(position, plusOne, constantFunction));
-	moves = moves.concat(continueMove(position, minusOne, constantFunction));
+	const moveArr = [
+		[constantFunction, plusOne],
+		[constantFunction, minusOne],
+		[plusOne, constantFunction],
+		[minusOne, constantFunction],
+	];
+	for (const move of moveArr) {
+		moves = moves.concat(continueMove(position, move[0], move[1]));
+	}
 	return moves;
 }
 
@@ -284,65 +321,47 @@ function knight(position) {
 	const coords = stringToCoords(position);
 	let x = coords[0];
 	let y = coords[1];
+	const moveArr = [
+		[x + 1, y + 2],
+		[x + 1, y - 2],
+		[x + 2, y + 1],
+		[x + 2, y - 1],
+		[x - 1, y + 2],
+		[x - 1, y - 2],
+		[x - 2, y + 1],
+		[x - 2, y - 1],
+	];
 
-	if (inspectCoords(x + 1, y + 2)) {
-		moves.push(inspectCoords(x + 1, y + 2));
-	}
-	if (inspectCoords(x + 1, y - 2)) {
-		moves.push(inspectCoords(x + 1, y - 2));
-	}
-	if (inspectCoords(x + 2, y + 1)) {
-		moves.push(inspectCoords(x + 2, y + 1));
-	}
-	if (inspectCoords(x + 2, y - 1)) {
-		moves.push(inspectCoords(x + 2, y - 1));
-	}
-	if (inspectCoords(x - 1, y + 2)) {
-		moves.push(inspectCoords(x - 1, y + 2));
-	}
-	if (inspectCoords(x - 1, y - 2)) {
-		moves.push(inspectCoords(x - 1, y - 2));
-	}
-	if (inspectCoords(x - 2, y + 1)) {
-		moves.push(inspectCoords(x - 2, y + 1));
-	}
-	if (inspectCoords(x - 2, y - 1)) {
-		moves.push(inspectCoords(x - 2, y - 1));
+	for (const move of moveArr) {
+		if (inspectCoords(move[0], move[1])) {
+			moves.push(inspectCoords(move[0], move[1]));
+		}
 	}
 	return moves;
 }
 
 function king(position) {
 	let moves = [];
-
 	const coords = stringToCoords(position);
 	let x = coords[0];
 	let y = coords[1];
+	const moveArr = [
+		[x, y + 1],
+		[x, y - 1],
+		[x + 1, y + 1],
+		[x + 1, y - 1],
+		[x + 1, y],
+		[x - 1, y + 1],
+		[x - 1, y - 1],
+		[x - 1, y],
+	];
 
-	if (inspectCoords(x, y + 1)) {
-		moves.push(inspectCoords(x, y + 1));
+	for (const move of moveArr) {
+		if (inspectCoords(move[0], move[1])) {
+			moves.push(inspectCoords(move[0], move[1]));
+		}
 	}
-	if (inspectCoords(x, y - 1)) {
-		moves.push(inspectCoords(x, y - 1));
-	}
-	if (inspectCoords(x + 1, y + 1)) {
-		moves.push(inspectCoords(x + 1, y + 1));
-	}
-	if (inspectCoords(x + 1, y - 1)) {
-		moves.push(inspectCoords(x + 1, y - 1));
-	}
-	if (inspectCoords(x + 1, y)) {
-		moves.push(inspectCoords(x + 1, y));
-	}
-	if (inspectCoords(x - 1, y + 1)) {
-		moves.push(inspectCoords(x - 1, y + 1));
-	}
-	if (inspectCoords(x - 1, y - 1)) {
-		moves.push(inspectCoords(x - 1, y - 1));
-	}
-	if (inspectCoords(x - 1, y)) {
-		moves.push(inspectCoords(x - 1, y));
-	}
+
 	for (let rookPosition in castling[currentPlayer]) {
 		if (
 			castling[currentPlayer][rookPosition].isActive &&
@@ -613,7 +632,7 @@ function threatsToSpace(space) {
 						// can be defended by taking the piece or blocking its path. We use something
 						// like echolocation, using the inversion of the attacking continueMove from the
 						// threatened space and from the defense perspective, which generates all
-						// intermediate spaces for blocking as well at the attacking piece's position
+						// intermediate spaces for blocking as well as the attacking piece's position
 						// stored as an 'enemy'.
 						const threatX = stringToCoords(position)[0];
 						const threatY = stringToCoords(position)[1];
@@ -698,7 +717,7 @@ function performIntersection(arr1, arr2) {
 function styleBoard() {
 	let isWhite = false;
 	let counter = 0;
-	for (const position in board) {
+	for (const position in initialBoard) {
 		const positionEl = document.getElementById(position);
 		positionEl.classList.add('square');
 		if (isWhite) {
@@ -725,18 +744,6 @@ function displayCapturedPieces() {
 		blackCapturedContainer.append(renderedPiece);
 	}
 }
-
-saveGameBtn.addEventListener('click', async () => {
-	const response = await saveGame(
-		id,
-		board,
-		capturedPieces.black,
-		capturedPieces.white
-	);
-	saveGameBtn.textContent = 'GAME SAVED';
-	saveGameBtn.classList.remove('save-game-btn');
-	saveGameBtn.classList.add('game-saved');
-});
 
 function movePieceSound() {
 	var audio = new Audio('./assets/chess-move.wav');

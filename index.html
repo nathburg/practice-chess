@@ -1,145 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Aboreto&family=DynaPuff&family=Goldman&family=Inconsolata&family=Lobster&family=Playfair+Display&family=Rubik+Dirt&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles/style.css"/>
-    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-    <link rel="stylesheet" href="./styles/style.css"/>
-    <title>Document</title>
-</head>
-<body>
-    
-    <header>
-        <h1>Chess</h1>
-        <h2 id="check"></h2>
-        <nav>
-            <a href="home-page">Home</a>
-            <a href="auth" id="sign-out-link">Sign out</a>
-            <a href="">Resign</a>
-        </nav>
-    </header>
-    <main>
-        <div class="captured-pieces">
-            <h3>player 2 prisoners</h3>
-            <div class="white-captured">
-                
-            </div>
-            <h3>player 1 prisoners</h3>
-            <div class="black-captured">
-                
-            </div>
-        </div>
-        <section class="board"> 
-            <div class="row">
-                <button class="square" id="a8"></button>
-                <button class="square" id="b8"></button>
-                <button class="square" id="c8"></button>
-                <button class="square" id="d8"></button>
-                <button class="square" id="e8"></button>
-                <button class="square" id="f8"></button>
-                <button class="square" id="g8"></button>
-                <button class="square" id="h8"></button>
-            </div>    
-            <div class="row">
-                <button class="square" id="a7"></button>
-                <button class="square" id="b7"></button>
-                <button class="square" id="c7"></button>
-                <button class="square" id="d7"></button>
-                <button class="square" id="e7"></button>
-                <button class="square" id="f7"></button>
-                <button class="square" id="g7"></button>
-                <button class="square" id="h7"></button>
-            </div>    
-            <div class="row">
-                <button class="square" id="a6"></button>
-                <button class="square" id="b6"></button>
-                <button class="square" id="c6"></button>
-                <button class="square" id="d6"></button>
-                <button class="square" id="e6"></button>
-                <button class="square" id="f6"></button>
-                <button class="square" id="g6"></button>
-                <button class="square" id="h6"></button>
-            </div>    
-            <div class="row">
-                <button class="square" id="a5"></button>
-                <button class="square" id="b5"></button>
-                <button class="square" id="c5"></button>
-                <button class="square" id="d5"></button>
-                <button class="square" id="e5"></button>
-                <button class="square" id="f5"></button>
-                <button class="square" id="g5"></button>
-                <button class="square" id="h5"></button>
-            </div>    
-            <div class="row">
-                <button class="square" id="a4"></button>
-                <button class="square" id="b4"></button>
-                <button class="square" id="c4"></button>
-                <button class="square" id="d4"></button>
-                <button class="square" id="e4"></button>
-                <button class="square" id="f4"></button>
-                <button class="square" id="g4"></button>
-                <button class="square" id="h4"></button>
-            </div>    
-            <div class="row">
-                <button class="square" id="a3"></button>
-                <button class="square" id="b3"></button>
-                <button class="square" id="c3"></button>
-                <button class="square" id="d3"></button>
-                <button class="square" id="e3"></button>
-                <button class="square" id="f3"></button>
-                <button class="square" id="g3"></button>
-                <button class="square" id="h3"></button>
-            </div>    
-            <div class="row">
-                <button class="square" id="a2"></button>
-                <button class="square" id="b2"></button>
-                <button class="square" id="c2"></button>
-                <button class="square" id="d2"></button>
-                <button class="square" id="e2"></button>
-                <button class="square" id="f2"></button>
-                <button class="square" id="g2"></button>
-                <button class="square" id="h2"></button>
-            </div>    
-            <div class="row">
-                <button class="square" id="a1"></button>
-                <button class="square" id="b1"></button>
-                <button class="square" id="c1"></button>
-                <button class="square" id="d1"></button>
-                <button class="square" id="e1"></button>
-                <button class="square" id="f1"></button>
-                <button class="square" id="g1"></button>
-                <button class="square" id="h1"></button>
-            </div>    
-        </section> 
-        <div class="table">
-            <div class="glass1">
-                <img src="./assets/scotch-removebg-preview.png">
-            </div>
-            <div class="glass2">
-                <img src="./assets/cigar-ashtray-removebg-preview.png">
-            </div>
-        </div>
-        
-    </main>
-    
-    <div class="save-container">
-        <audio id="music" src="./assets/New York Jazz Lounge - Bar Jazz Classics.mp3" autoplay="true" controls>
-            <embed 
-            src="./assets/New York Jazz Lounge - Bar Jazz Classics.mp3" 
-            loop="true" 
-            autostart="true"
-            width="2" 
-            height="0" 
-            VOLUME=".25">
-    
-        </audio>
-        <button id="save-game-btn" class="save-game-btn">Save Game</button>
-    </div>
-    
-    <script type="module" src="app.js"></script>
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Aboreto&family=DynaPuff&family=Goldman&family=Inconsolata&family=Lobster&family=Playfair+Display&family=Rubik+Dirt&display=swap"
+			rel="stylesheet"
+		/>
+		<link rel="stylesheet" href="styles/style.css" />
+		<script
+			defer
+			src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.7/dist/umd/supabase.min.js"
+		></script>
+		<link rel="stylesheet" href="./styles/style.css" />
+		<title>Document</title>
+	</head>
+	<body>
+		<header>
+			<h1>Chess</h1>
+			<h2 id="check"></h2>
+			<nav>
+				<a href="home-page">Home</a>
+				<a href="auth" id="sign-out-link">Sign out</a>
+				<a href="">Resign</a>
+			</nav>
+		</header>
+		<main>
+			<div class="captured-pieces">
+				<h3>player 2 prisoners</h3>
+				<div class="white-captured"></div>
+				<h3>player 1 prisoners</h3>
+				<div class="black-captured"></div>
+			</div>
+			<section class="board">
+				<div class="row">
+					<button class="square" id="a8"></button>
+					<button class="square" id="b8"></button>
+					<button class="square" id="c8"></button>
+					<button class="square" id="d8"></button>
+					<button class="square" id="e8"></button>
+					<button class="square" id="f8"></button>
+					<button class="square" id="g8"></button>
+					<button class="square" id="h8"></button>
+				</div>
+				<div class="row">
+					<button class="square" id="a7"></button>
+					<button class="square" id="b7"></button>
+					<button class="square" id="c7"></button>
+					<button class="square" id="d7"></button>
+					<button class="square" id="e7"></button>
+					<button class="square" id="f7"></button>
+					<button class="square" id="g7"></button>
+					<button class="square" id="h7"></button>
+				</div>
+				<div class="row">
+					<button class="square" id="a6"></button>
+					<button class="square" id="b6"></button>
+					<button class="square" id="c6"></button>
+					<button class="square" id="d6"></button>
+					<button class="square" id="e6"></button>
+					<button class="square" id="f6"></button>
+					<button class="square" id="g6"></button>
+					<button class="square" id="h6"></button>
+				</div>
+				<div class="row">
+					<button class="square" id="a5"></button>
+					<button class="square" id="b5"></button>
+					<button class="square" id="c5"></button>
+					<button class="square" id="d5"></button>
+					<button class="square" id="e5"></button>
+					<button class="square" id="f5"></button>
+					<button class="square" id="g5"></button>
+					<button class="square" id="h5"></button>
+				</div>
+				<div class="row">
+					<button class="square" id="a4"></button>
+					<button class="square" id="b4"></button>
+					<button class="square" id="c4"></button>
+					<button class="square" id="d4"></button>
+					<button class="square" id="e4"></button>
+					<button class="square" id="f4"></button>
+					<button class="square" id="g4"></button>
+					<button class="square" id="h4"></button>
+				</div>
+				<div class="row">
+					<button class="square" id="a3"></button>
+					<button class="square" id="b3"></button>
+					<button class="square" id="c3"></button>
+					<button class="square" id="d3"></button>
+					<button class="square" id="e3"></button>
+					<button class="square" id="f3"></button>
+					<button class="square" id="g3"></button>
+					<button class="square" id="h3"></button>
+				</div>
+				<div class="row">
+					<button class="square" id="a2"></button>
+					<button class="square" id="b2"></button>
+					<button class="square" id="c2"></button>
+					<button class="square" id="d2"></button>
+					<button class="square" id="e2"></button>
+					<button class="square" id="f2"></button>
+					<button class="square" id="g2"></button>
+					<button class="square" id="h2"></button>
+				</div>
+				<div class="row">
+					<button class="square" id="a1"></button>
+					<button class="square" id="b1"></button>
+					<button class="square" id="c1"></button>
+					<button class="square" id="d1"></button>
+					<button class="square" id="e1"></button>
+					<button class="square" id="f1"></button>
+					<button class="square" id="g1"></button>
+					<button class="square" id="h1"></button>
+				</div>
+			</section>
+			<div class="table">
+				<div class="glass1">
+					<img src="./assets/scotch-removebg-preview.png" />
+				</div>
+				<div class="glass2">
+					<img src="./assets/cigar-ashtray-removebg-preview.png" />
+				</div>
+			</div>
+		</main>
 
-</body>
+		<div class="save-container">
+			<audio
+				id="music"
+				src="./assets/New York Jazz Lounge - Bar Jazz Classics.mp3"
+				autoplay="true"
+				controls
+			>
+				<embed
+					src="./assets/New York Jazz Lounge - Bar Jazz Classics.mp3"
+					loop="true"
+					autostart="true"
+					width="2"
+					height="0"
+					VOLUME=".25"
+				/>
+			</audio>
+			<button id="save-game-btn" class="save-game-btn">Save Game</button>
+		</div>
+
+		<script type="module" src="app.js"></script>
+	</body>
 </html>
