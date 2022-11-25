@@ -43,7 +43,6 @@ let check = false;
 let checkDefense = [];
 
 let state = {
-	isGameOn,
 	currentPlayer,
 	board,
 	castling,
